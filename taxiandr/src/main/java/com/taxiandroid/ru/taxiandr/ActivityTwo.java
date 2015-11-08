@@ -72,6 +72,7 @@ public class ActivityTwo extends AppCompatActivity {
                     while ((line=br.readLine()) != null) {
                         response+=line;
                     }
+                    MyVariables.InOuExcept = false;
                     Log.d(TAG, response);
                     try {
                         JSONObject jo =  new JSONObject(response);
@@ -89,6 +90,7 @@ public class ActivityTwo extends AppCompatActivity {
                 //...
                 // return response;
             } catch (JSONException | IOException e) {
+                MyVariables.InOuExcept = true;
                 e.printStackTrace();
             } finally {
                 if (urlConnection != null) {
@@ -101,11 +103,14 @@ public class ActivityTwo extends AppCompatActivity {
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
             //получили JSON строку с сервера
-            if (errPost.contains("none")) {
-                Toast.makeText(getApplicationContext(), "Сервер ответил ОК", Toast.LENGTH_SHORT).show();
-                //startActivity(new Intent(getApplicationContext(), ActivityTwo.class));
-            } else {
-                Toast.makeText(getApplicationContext(), "Сервер ответил Ошибка", Toast.LENGTH_SHORT).show();
+            if  (MyVariables.InOuExcept) {
+                Toast.makeText(getApplicationContext(), "Ошибка соединения с сервером!", Toast.LENGTH_SHORT).show();} else {
+                if (errPost.contains("none")) {
+                    Toast.makeText(getApplicationContext(), "Сервер ответил ОК", Toast.LENGTH_SHORT).show();
+                    //startActivity(new Intent(getApplicationContext(), ActivityTwo.class));
+                } else {
+                    Toast.makeText(getApplicationContext(), "Сервер ответил Ошибка", Toast.LENGTH_SHORT).show();
+                }
             }
 
         }

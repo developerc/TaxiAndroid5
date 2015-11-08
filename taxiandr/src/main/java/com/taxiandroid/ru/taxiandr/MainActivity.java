@@ -159,6 +159,7 @@ public class MainActivity extends AppCompatActivity
                     while ((line=br.readLine()) != null) {
                         response+=line;
                     }
+                    MyVariables.InOuExcept = false;
                     Log.d(TAG, response);
                     try {
                         JSONObject jo =  new JSONObject(response);
@@ -180,6 +181,7 @@ public class MainActivity extends AppCompatActivity
                 //...
                // return response;
             } catch (JSONException | IOException e) {
+                MyVariables.InOuExcept = true;
                 e.printStackTrace();
             } finally {
                 if (urlConnection != null) {
@@ -198,11 +200,14 @@ public class MainActivity extends AppCompatActivity
 
             flagClkLV = false;
             super.onPostExecute(result);
-            if (errPost.contains("none")) {
-                //Toast.makeText(getApplicationContext(), "Сервер ответил ОК", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(getApplicationContext(), ActivityTwo.class));
-            } else {
-                Toast.makeText(getApplicationContext(), "Сервер ответил Ошибка", Toast.LENGTH_SHORT).show();
+            if (MyVariables.InOuExcept) {
+                Toast.makeText(getApplicationContext(), "Ошибка соединения с сервером!", Toast.LENGTH_SHORT).show();} else {
+                if (errPost.contains("none")) {
+                    //Toast.makeText(getApplicationContext(), "Сервер ответил ОК", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(getApplicationContext(), ActivityTwo.class));
+                } else {
+                    Toast.makeText(getApplicationContext(), "Сервер ответил Ошибка", Toast.LENGTH_SHORT).show();
+                }
             }
 
         }
@@ -240,6 +245,7 @@ public class MainActivity extends AppCompatActivity
                 while ((StringBuffer = bufferReader.readLine()) != null) {
                     stringText += StringBuffer;
                 }
+                MyVariables.InOuExcept = false;
                 bufferReader.close();
 
                 textResult = stringText;
@@ -250,6 +256,7 @@ public class MainActivity extends AppCompatActivity
                 textResult = e.toString();
             } catch (IOException e) {
                 // TODO Auto-generated catch block
+                MyVariables.InOuExcept = true;
                 e.printStackTrace();
                 textResult = e.toString();
             }
@@ -260,10 +267,13 @@ public class MainActivity extends AppCompatActivity
             //получили JSON строку с сервера
            // Log.d(TAG, textResult);
             //обрабатываем JSON строку
-            try {
-                ZakazJson(textResult);
-            } catch (JSONException e) {
-                e.printStackTrace();
+            if (MyVariables.InOuExcept) {
+                Toast.makeText(getApplicationContext(), "Ошибка соединения с сервером!", Toast.LENGTH_SHORT).show();} else {
+                try {
+                    ZakazJson(textResult);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
 
             super.onPostExecute(result);
