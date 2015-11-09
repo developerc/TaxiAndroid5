@@ -27,6 +27,8 @@
         android:textColor="@drawable/white_color"
         android:background="@drawable/dark_blue_color"
         android:textAppearance="?android:attr/textAppearanceLarge"
+
+
         />
 
 </LinearLayout>
