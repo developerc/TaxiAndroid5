@@ -31,5 +31,7 @@
     <string name="text_server">Сервер:</string>
     <string name="text_distance">Дистанция: 0 м</string>
     <string name="text_stay">Стоянка: 0 сек</string>
+    <string name="text_inet">Интернет</string>
+    <string name="text_gps">GPS</string>
 
 </resources>

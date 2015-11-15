@@ -5,4 +5,9 @@
         app:showAsAction="withText|ifRoom" />-->
     <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/item2" android:icon="@drawable/ic_action_location_3"
+        app:showAsAction="always" android:title="@string/text_gps" />
+    <item android:id="@+id/item3" android:icon="@drawable/ic_action_globe_2"
+        app:showAsAction="always" android:title="@string/text_inet" />
+
 </menu>
