@@ -12,8 +12,9 @@ import android.widget.Toast;
 
 public class FourActivity extends AppCompatActivity {
     Button btnSave, btnLoad;
-    EditText etLgn, etPsw;
+    EditText etLgn, etPsw, etSrv;
     SharedPreferences sPref;
+
 
     final String SAVED_TEXT_LGN = "saved_text_lgn";
     final String SAVED_TEXT_PSW = "saved_text_psw";
@@ -26,6 +27,7 @@ public class FourActivity extends AppCompatActivity {
 
         etLgn = (EditText) this.findViewById(R.id.etLgn);
         etPsw = (EditText) this.findViewById(R.id.etPsw);
+        etSrv = (EditText) this.findViewById(R.id.etSrv);
 
         btnSave = (Button) this.findViewById(R.id.btnSave);
         btnSave.setOnClickListener(new View.OnClickListener() {
@@ -58,6 +60,7 @@ public class FourActivity extends AppCompatActivity {
 
         MyVariables.SAVED_TEXT_1=etLgn.getText().toString();
         MyVariables.SAVED_TEXT_2=etPsw.getText().toString();
+        MyVariables.HTTPAdress = etSrv.getText().toString();
     }
 
     private void loadText() {
@@ -67,6 +70,7 @@ public class FourActivity extends AppCompatActivity {
 
         etLgn.setText(savedTextLgn);
         etPsw.setText(savedTextPsw);
+        etSrv.setText(MyVariables.HTTPAdress);
         Toast.makeText(this, "Загружено " , Toast.LENGTH_SHORT).show();
 
         MyVariables.SAVED_TEXT_1=savedTextLgn;

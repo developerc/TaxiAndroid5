@@ -1,10 +1,23 @@
 package com.taxiandroid.ru.taxiandr;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Handler;
+import android.os.SystemClock;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -35,29 +48,33 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 
 public class MainActivity extends AppCompatActivity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
+    int i = 0;
     ArrayList<Orders> arrayOfOrders;
     ListView lvOrders;
     CustomOrdersAdapter adapter;
     String httpPath;
     String postPath;
+    String httpTaxometrPath;
     final Handler myHandler = new Handler();
-   // Runnable runnable;
-   // HTTGATask httgatask;  //обьявили класс для метода GEt
+    // Runnable runnable;
+    // HTTGATask httgatask;  //обьявили класс для метода GEt
     private static final String TAG = "myLogs";
     final String textSource = "http://pchelka.teleknot.ru/api/user1/x11unkde/orders";
-    public  static boolean ZakazEmpty = true;
+    public static boolean ZakazEmpty = true;
     SharedPreferences sPref;
     final String SAVED_TEXT_LGN = "saved_text_lgn";
     final String SAVED_TEXT_PSW = "saved_text_psw";
     public static boolean flagClkLV = false;
-    static String errPost="";
+    static String errPost = "";
     public static int ClkZak;
-    public static String ClkAdr="";
-    public static String ClkTel="";
+    public static String ClkAdr = "";
+    public static String ClkTel = "";
+    public static String ClkPre = "";
 
     public static ArrayList<Integer> zakaz = new ArrayList<Integer>();
     public static ArrayList<String> telefon = new ArrayList<String>();
@@ -67,6 +84,40 @@ public class MainActivity extends AppCompatActivity
     public static ArrayList<String> adres = new ArrayList<String>();
     public static ArrayList<String> car = new ArrayList<String>();
     public static ArrayList<String> predvar = new ArrayList<String>();
+
+    HTTGATaxometr httgataxometr; //обьявили класс для настроек таксометра
+    private static final String ERROR = "error";    //получаем JSON текст с параметрами error
+    private static final String RESULT = "result";  //и result
+    private LocationManager locationManager;
+    static boolean FlagAppStarted = false;
+    private Context context;
+
+    //переменные для таксометра
+    String Lat;
+    String Lon;
+    public static long OldTime=0, NewTime=0, TimeInterval, TimeItogo=0, TimeStay=0;
+    public static float OldSpeed, NewSpeed, AverageSpeed, Distance, Cost, ItogKmGorod, ItogKmPrig, ItogKmRn, ItogKmMg=0;
+    public static float Itogo=0;
+    boolean tutGorod=false; //в городе
+    boolean tutVG=false;    //на военном городке
+    boolean tutPG=false;    //в пригороде
+    boolean tutRn=false;    //в районе
+    boolean tutRn2=false;    //тоже в районе
+    public static double d;
+    public static double da;
+    public static double db;
+    public static double ta;
+    public static double tb;
+    public static double XIntersect;
+    public static double YIntersect;
+
+    static boolean StartTax=false;
+    //static boolean StartTax=true;
+    static boolean FirstTime=true;
+    static boolean PauseTax=true;
+    static String hms;
+
+   // Intent myIntent;
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -103,41 +154,49 @@ public class MainActivity extends AppCompatActivity
             }
         }, 0, 15000);
 
-        sPref = this.getSharedPreferences("pref",0);
+        sPref = this.getSharedPreferences("pref", 0);
         MyVariables.SAVED_TEXT_1 = sPref.getString(SAVED_TEXT_LGN, "");
         MyVariables.SAVED_TEXT_2 = sPref.getString(SAVED_TEXT_PSW, "");
 
-        httpPath =MyVariables.HTTPAdress+MyVariables.SAVED_TEXT_1+"/"+MyVariables.SAVED_TEXT_2+"/orders";
-        postPath = MyVariables.HTTPAdress+MyVariables.SAVED_TEXT_1+"/"+MyVariables.SAVED_TEXT_2+"/order/";
-        Log.d(TAG, "Запустилось! " );
+        httpPath = MyVariables.HTTPAdress + MyVariables.SAVED_TEXT_1 + "/" + MyVariables.SAVED_TEXT_2 + "/orders";
+        postPath = MyVariables.HTTPAdress + MyVariables.SAVED_TEXT_1 + "/" + MyVariables.SAVED_TEXT_2 + "/order/";
+        httpTaxometrPath = MyVariables.HTTPAdress + MyVariables.SAVED_TEXT_1 + "/" + MyVariables.SAVED_TEXT_2 + "/taximeter";
+
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        context = getApplicationContext();
+        Log.d(TAG, "Запустилось! ");
+       // myIntent = new Intent(getApplicationContext(), ActivityThree.class);
     }
 
     private void UpdateGUI() {
-//        i++;
+        i++;
         myHandler.post(myRunnable);
     }
 
     final Runnable myRunnable = new Runnable() {
         public void run() {
             Log.d(TAG, "Таймер работает! ");
-            if (flagClkLV == false) { //усли не кликнули на ListView
-                new GetAsincTask().execute(httpPath);
-                if (ZakazEmpty == false) {
-                    updateUsersList(); //обновляем ListView
-                } else {
-                    populateUsersList();
+            if (i != 1) { // если не первый раз
+                if (flagClkLV == false) { //усли не кликнули на ListView
+                    new GetAsincTask().execute(httpPath);
+                    if (ZakazEmpty == false) {
+                        updateUsersList(); //обновляем ListView
+                    } else {
+                        populateUsersList();
+                    }
+                } else { //отсылаем POST на взятие заказа
+                    new PostAsincTask().execute(postPath + "addcar");
                 }
-            } else { //отсылаем POST на взятие заказа
-
-
-             new PostAsincTask().execute(postPath + "addcar");
-               // Log.d(TAG, errPost);
+            } else { //первый раз получаем настройки таксометра
+                new HTTGATaxometr().execute(httpTaxometrPath);
             }
+
         }
     };
 
-        public  class PostAsincTask extends AsyncTask<String, Void, String> {
+    public class PostAsincTask extends AsyncTask<String, Void, String> {
         String response = "";
+
         @Override
         protected String doInBackground(String... params) {
             Log.d(TAG, "*******************    Open Post Connection    *****************************");
@@ -151,19 +210,19 @@ public class MainActivity extends AppCompatActivity
                 jsonBody = new JSONObject();
                 jsonBody.put("order_id", ClkZak);
                 requestBody = jsonBody.toString();
-               // requestBody = Utils.buildPostParameters(jsonBody);
+                // requestBody = Utils.buildPostParameters(jsonBody);
                 urlConnection = (HttpURLConnection) Utils.makeRequest("POST", url, null, "application/json", requestBody);
                 if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     String line;
-                    BufferedReader br=new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                    while ((line=br.readLine()) != null) {
-                        response+=line;
+                    BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    while ((line = br.readLine()) != null) {
+                        response += line;
                     }
                     MyVariables.InOuExcept = false;
                     Log.d(TAG, response);
                     try {
-                        JSONObject jo =  new JSONObject(response);
-                        errPost= jo.getString("error");
+                        JSONObject jo = new JSONObject(response);
+                        errPost = jo.getString("error");
                         /*if (errPost.contains("none")) {
                             Toast.makeText(getApplicationContext(), "Сервер ответил ОК", Toast.LENGTH_SHORT).show();
                         } else {
@@ -173,13 +232,13 @@ public class MainActivity extends AppCompatActivity
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                   // Log.d(TAG, String.valueOf(errPost));
+                    // Log.d(TAG, String.valueOf(errPost));
                 } else {
-                   // Toast.makeText(getApplicationContext(), "Ошибка ответа сервера", Toast.LENGTH_SHORT).show();
+                    // Toast.makeText(getApplicationContext(), "Ошибка ответа сервера", Toast.LENGTH_SHORT).show();
                     Log.d(TAG, String.valueOf(urlConnection.getResponseCode()));
                 }
                 //...
-               // return response;
+                // return response;
             } catch (JSONException | IOException e) {
                 MyVariables.InOuExcept = true;
                 e.printStackTrace();
@@ -190,8 +249,9 @@ public class MainActivity extends AppCompatActivity
             }
 
             return response;
-           // return null;
+            // return null;
         }
+
         @Override
         protected void onPostExecute(String result) {
             //получили JSON строку с сервера
@@ -201,7 +261,8 @@ public class MainActivity extends AppCompatActivity
             flagClkLV = false;
             super.onPostExecute(result);
             if (MyVariables.InOuExcept) {
-                Toast.makeText(getApplicationContext(), "Ошибка соединения с сервером!", Toast.LENGTH_SHORT).show();} else {
+                Toast.makeText(getApplicationContext(), "Ошибка соединения с сервером!", Toast.LENGTH_SHORT).show();
+            } else {
                 if (errPost.contains("none")) {
                     //Toast.makeText(getApplicationContext(), "Сервер ответил ОК", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(getApplicationContext(), ActivityTwo.class));
@@ -231,11 +292,11 @@ public class MainActivity extends AppCompatActivity
                 conn.setDoInput(true);
                 conn.connect();
                 int response = conn.getResponseCode();
-               // Log.d(TAG, "The response is: " + response);
+                // Log.d(TAG, "The response is: " + response);
                 InputStream in = conn.getInputStream();
-               // Log.d(TAG, "GetInputStream:  " + in);
+                // Log.d(TAG, "GetInputStream:  " + in);
 
-               // Log.d(TAG, "*******************    String Builder     *****************************");
+                // Log.d(TAG, "*******************    String Builder     *****************************");
                 String line = null;
 
                 BufferedReader bufferReader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -262,13 +323,15 @@ public class MainActivity extends AppCompatActivity
             }
             return null;
         }
+
         @Override
         protected void onPostExecute(Void result) {
             //получили JSON строку с сервера
-           // Log.d(TAG, textResult);
+            // Log.d(TAG, textResult);
             //обрабатываем JSON строку
             if (MyVariables.InOuExcept) {
-                Toast.makeText(getApplicationContext(), "Ошибка соединения с сервером!", Toast.LENGTH_SHORT).show();} else {
+                Toast.makeText(getApplicationContext(), "Ошибка соединения с сервером!", Toast.LENGTH_SHORT).show();
+            } else {
                 try {
                     ZakazJson(textResult);
                 } catch (JSONException e) {
@@ -287,14 +350,13 @@ public class MainActivity extends AppCompatActivity
         if (jsonString.contains("ERROR: zakazi not found")) {
             ZakazEmpty = true;
             Log.d(TAG, "Заказов нет");
-        }
-        else {
+        } else {
             Log.d(TAG, "Заказы есть");
             ZakazEmpty = false;
-           // jsonString = "{\"myjsonarray\"="+jsonString+"}";
+            // jsonString = "{\"myjsonarray\"="+jsonString+"}";
             Log.d(TAG, jsonString);
-           // JSONObject jo =  new JSONObject(jsonString);
-           // JSONArray jsonMainArr = null;
+            // JSONObject jo =  new JSONObject(jsonString);
+            // JSONArray jsonMainArr = null;
             //jsonMainArr = jo.toJSONArray(jsonMainArr);
             // JSONArray jsonMainArr = jo.getJSONArray("myjsonarray");
             JSONArray jsonMainArr = new JSONArray(jsonString);
@@ -309,7 +371,7 @@ public class MainActivity extends AppCompatActivity
             car.clear();
             predvar.clear();
 
-            for(int i=0; i<jsonMainArr.length(); i++) {
+            for (int i = 0; i < jsonMainArr.length(); i++) {
                 JSONObject json_data = jsonMainArr.getJSONObject(i);
                 zakaz.add(json_data.getInt("zakaz"));
                 telefon.add(json_data.getString("telefon"));
@@ -322,9 +384,9 @@ public class MainActivity extends AppCompatActivity
                 // Log.d(TAG, "Заказ=" + zakaz.get(i) + "  Адрес:" + adres.get(i) + "  Предварительный:" + predvar.get(i));
 
             }
-            for(int i=0; i<zakaz.size(); i++) {
+            for (int i = 0; i < zakaz.size(); i++) {
 
-                Log.d(TAG, "Заказ=" + zakaz.get(i) + "  Адрес:" + adres.get(i) + "  Предварительный:" + predvar.get(i) + " Дата:" + dat.get(i) + " Время:" + tim.get(i).substring(11,16) + " Машина:" + car.get(i));
+                Log.d(TAG, "Заказ=" + zakaz.get(i) + "  Адрес:" + adres.get(i) + "  Предварительный:" + predvar.get(i) + " Дата:" + dat.get(i) + " Время:" + tim.get(i).substring(11, 16) + " Машина:" + car.get(i));
             }
 
         }
@@ -379,17 +441,19 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             view.setSelected(true);
-           // Orders itemLV = (Orders) parent.getItemAtPosition(position);
+            // Orders itemLV = (Orders) parent.getItemAtPosition(position);
             //String itemZak = itemLV.adres;
             ClkZak = zakaz.get(position);
             ClkAdr = adres.get(position);
             ClkTel = telefon.get(position);
+            ClkPre = predvar.get(position);
             Toast.makeText(getApplicationContext(),
                     "Вы выбрали " + ClkAdr + " \n заказ " + ClkZak, Toast.LENGTH_SHORT).show();
-            if (flagClkLV == false)  {flagClkLV = true;}
-            else  flagClkLV = false;
+            if (flagClkLV == false) {
+                flagClkLV = true;
+            } else flagClkLV = false;
             //потом откроем Activity2 если придет респонз об удачном взятии заказа
-           // startActivity(new Intent(getApplicationContext(),ActivityTwo.class));
+            // startActivity(new Intent(getApplicationContext(),ActivityTwo.class));
         }
     };
 
@@ -401,6 +465,7 @@ public class MainActivity extends AppCompatActivity
         lvOrders = (ListView) findViewById(R.id.lvOrders);
         lvOrders.setAdapter(adapter);
     }
+
     private void updateUsersList() {
         // Construct the data source
         // ArrayList<User> arrayOfUsers = User.getUsers();
@@ -425,20 +490,25 @@ public class MainActivity extends AppCompatActivity
         switch (number) {
             case 1:
                 mTitle = getString(R.string.title_section1);
-               // startActivity(new Intent(getApplicationContext(),FourActivity.class));
+                // startActivity(new Intent(getApplicationContext(),FourActivity.class));
                 break;
             case 2:
                 //mTitle = getString(R.string.title_section2);
-                startActivity(new Intent(getApplicationContext(),FourActivity.class));
+                startActivity(new Intent(getApplicationContext(), FourActivity.class));
                 break;
             case 3:
-                mTitle = getString(R.string.title_section3);
+                //mTitle = getString(R.string.title_section3);
+                startActivity(new Intent(getApplicationContext(), ActivityFive.class));
                 break;
             case 4:
                 mTitle = getString(R.string.title_section4);
                 break;
             case 5:
-                mTitle = getString(R.string.title_section5);
+                //mTitle = getString(R.string.title_section5);
+                //myIntent = new Intent(getApplicationContext(), ActivityThree.class);
+
+                startActivity(new Intent(getApplicationContext(),ActivityThree.class));
+                //startActivity(myIntent);
                 break;
             case 6:
                 finish();
@@ -522,4 +592,483 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    class HTTGATaxometr extends AsyncTask<String, Void, Void> { //получаем первоначальные настройки таксометра
+
+        @Override
+        protected Void doInBackground(String... arg0) {
+            // отсылаем GET запрос на получение настроек таксометра
+            try {
+                GetZapros();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {  //выводим результат в переменные класса MyVariables
+            super.onPostExecute(result);
+            // Log.d(TAG, "cost_km_city:  " + MyVariables.cost_km_city);
+            if (MyVariables.cost_km_city == 0.0) i = 0;
+
+            if (MyVariables.InOuExcept) {
+                Toast.makeText(getApplicationContext(), "Ошибка соединения с сервером!", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+    } //конец класса HTTGAtask
+
+    private void GetZapros() throws MalformedURLException {
+        Log.d(TAG, "*******************    Получаем настройки таксометра    *****************************");
+        URL url = new URL(httpTaxometrPath);
+        Log.d(TAG, "Received URL:  " + url);
+        HttpURLConnection conn = null;
+        try {
+            conn = (HttpURLConnection) url.openConnection();
+
+            conn.setReadTimeout(10000 /* milliseconds */);
+            conn.setConnectTimeout(15000 /* milliseconds */);
+            conn.setRequestMethod("GET");
+            conn.setDoInput(true);
+            conn.connect();
+            int response = conn.getResponseCode();
+            // Log.d(TAG, "The response is: " + response);
+            InputStream in = conn.getInputStream();
+            String line = null;
+
+            BufferedReader bufferReader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+            String StringBuffer;
+            String stringText = "";
+            while ((StringBuffer = bufferReader.readLine()) != null) {
+                stringText += StringBuffer;
+            }
+            MyVariables.InOuExcept = false;
+            bufferReader.close();
+            MyVariables.InOuExcept = false;
+            Log.d(TAG, stringText);
+            //---------- разбираем JSON строку.
+            try {
+                JSONObject jo = new JSONObject(stringText);
+                if (jo.getString(ERROR).equals("none")) { //если нет ошибок
+                    if (jo.getString(RESULT).equals("null")) {//если результат нулевой
+                        MyVariables.cost_km_city = 0;
+                        MyVariables.cost_km_intercity = 0;
+                        MyVariables.cost_km_suburb = 0;
+                        MyVariables.cost_km_n1 = 0;
+                        MyVariables.cost_stopping = 0;
+                        MyVariables.cost_passenger_boarding_day = 0;
+                        MyVariables.cost_passenger_boarding_night = 0;
+                        MyVariables.cost_passenger_pre_boarding_day = 0;
+                        MyVariables.cost_passenger_pre_boarding_night = 0;
+                    } else { //если результат не нулевой
+                        //разбираем строку RESULT
+                        JSONObject joRESULT = new JSONObject(jo.getString(RESULT));
+                        MyVariables.cost_km_city = Float.parseFloat(joRESULT.getString("cost_km_city"));
+                        MyVariables.cost_km_intercity = Float.parseFloat(joRESULT.getString("cost_km_intercity"));
+                        MyVariables.cost_km_suburb = Float.parseFloat(joRESULT.getString("cost_km_suburb"));
+                        MyVariables.cost_km_n1 = Float.parseFloat(joRESULT.getString("cost_km_n1"));
+                        MyVariables.cost_stopping = Float.parseFloat(joRESULT.getString("cost_stopping"));
+                        MyVariables.cost_passenger_boarding_day = Float.parseFloat(joRESULT.getString("cost_passenger_boarding_day"));
+                        MyVariables.cost_passenger_boarding_night = Float.parseFloat(joRESULT.getString("cost_passenger_boarding_night"));
+                        MyVariables.cost_passenger_pre_boarding_day = Float.parseFloat(joRESULT.getString("cost_passenger_pre_boarding_day"));
+                        MyVariables.cost_passenger_pre_boarding_night = Float.parseFloat(joRESULT.getString("cost_passenger_pre_boarding_night"));
+                        Log.d(TAG, "Обработались настройки таксометра");
+                        Log.d(TAG, String.valueOf(MyVariables.cost_km_city + " руб/км") + String.valueOf(MyVariables.cost_km_intercity + " руб/км"));
+                    }
+                } else { //если есть ошибки
+                    MyVariables.cost_km_city = 0;
+                    MyVariables.cost_km_intercity = 0;
+                    MyVariables.cost_km_suburb = 0;
+                    MyVariables.cost_km_n1 = 0;
+                    MyVariables.cost_stopping = 0;
+                    MyVariables.cost_passenger_boarding_day = 0;
+                    MyVariables.cost_passenger_boarding_night = 0;
+                    MyVariables.cost_passenger_pre_boarding_day = 0;
+                    MyVariables.cost_passenger_pre_boarding_night = 0;
+                }
+            } catch (JSONException e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, "Ошибка обработки JSON");
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            MyVariables.InOuExcept = true;
+            e.printStackTrace();
+        }
+    }
+
+    // check network connection
+    public boolean isConnected() {
+        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected())
+            return true;
+        else
+            return false;
+    }
+
+    @SuppressLint("NewApi")
+    @Override
+    protected void onResume() { //запускаем таксометр и определитель координат когда активити видно
+        super.onResume();
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {  //если GPS включено
+
+            int result = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION);
+            int result2 = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION);
+            if (result != PackageManager.PERMISSION_GRANTED && result2 != PackageManager.PERMISSION_GRANTED) return;
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 5, 0, locationListener);
+        } else Toast.makeText(this, "GPS not enabled!", Toast.LENGTH_SHORT).show();
+
+
+        //конец получения настроек с сервера
+        FlagAppStarted = true;
+    }
+
+    @SuppressLint("NewApi")
+    @Override
+    protected void onStop() {  //запускаем таксометр и определитель координат когда активити не видно
+        super.onStop();
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {  //если GPS включено
+
+            int result = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION);
+            int result2 = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION);
+            if (result != PackageManager.PERMISSION_GRANTED && result2 != PackageManager.PERMISSION_GRANTED) return;
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 * 5, 0, locationListener);
+        } else Toast.makeText(this, "GPS not enabled!", Toast.LENGTH_SHORT).show();
+
+
+        //конец получения настроек с сервера
+        //FlagAppStarted = true;
+    }
+
+
+    @SuppressLint("NewApi")
+    @Override
+    protected void onPause() {
+        super.onPause();
+        int result = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION);
+            int result2 = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION);
+            if (result != PackageManager.PERMISSION_GRANTED && result2 != PackageManager.PERMISSION_GRANTED) return;
+        locationManager.removeUpdates(locationListener);
+    }
+
+    private LocationListener locationListener = new LocationListener() {
+
+        @Override
+        public void onLocationChanged(Location location) {
+            //проверка доступен ли интернет
+           /* if(isConnected()){
+                //showLocation(location);
+                if (Fragment3.ErrNone) {
+                    iconINETyes();
+                } else iconINETyellow();
+
+            }
+            else	{iconINETno();  } */
+            //проверка включен ли GPS
+            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+               // iconGPSyes();
+               // Toast.makeText(getApplicationContext(), MyVariables.Lat + "  " + MyVariables.Lon + "  " + location.getSpeed(), Toast.LENGTH_SHORT).show();
+
+               showLocation(location);
+
+            }
+           // else iconGPSno();
+
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+    };
+
+    private void showLocation(Location location) {
+        //  this.mlocation = location;
+
+        if (location == null)
+            return;
+        if (location.getProvider().equals(LocationManager.GPS_PROVIDER)) {
+            Lat=formatLat(location);
+            Lat = Lat.replace(",", ".");
+            MyVariables.Lat=Lat;
+            Lon=formatLon(location);
+            Lon=Lon.replace(',', '.');
+            MyVariables.Lon=Lon;
+            //Fragment6.TaxometrMain[12]="Сработала showLocation";
+            if (StartTax) {
+                showTaxometr(location);
+            }
+            // etResponse.setText("Your coordinates:" + " Lat=" + Lat + " ,Lon=" + Lon + PswCorrect);
+            // new HttpAsyncTaskPost().execute(MyVariables.HTTPAdress+MyVariables.SAVED_TEXT_1+"/"+MyVariables.SAVED_TEXT_2+"/setcoord");
+        } else if (location.getProvider().equals(
+                LocationManager.NETWORK_PROVIDER)) {
+            Lat=formatLat(location);
+            Lat = Lat.replace(",", ".");
+            MyVariables.Lat=Lat;
+            Lon=formatLon(location);
+            Lon=Lon.replace(',', '.');
+            MyVariables.Lon=Lon;
+            // etResponse.setText("Your coordinates:" + " Lat=" + Lat + " ,Lon=" + Lon + PswCorrect);
+            // new HttpAsyncTaskPost().execute(MyVariables.HTTPAdress+MyVariables.SAVED_TEXT_1+"/"+MyVariables.SAVED_TEXT_2+"/setcoord");
+        }
+        //if (StartTax==true) {  myIntent.putExtra("btnStr","Proba");  }
+        //ActivityThree.buttonStart.setText("Проба");
+        Toast.makeText(getApplicationContext(), "StartTax=" +StartTax + "  " + location.getSpeed()  + "  " +  NewSpeed   + "  " +  Itogo, Toast.LENGTH_SHORT).show();
+    }
+
+    @SuppressLint("DefaultLocale") private String formatLat(Location location) {
+        if (location == null)
+            return "";
+        return String.format("%1$.10f",location.getLatitude());
+    }
+
+    @SuppressLint("DefaultLocale") private String formatLon(Location location) {
+        if (location == null)
+            return "";
+        return String.format("%1$.10f",location.getLongitude());
+    }
+
+    @SuppressLint("DefaultLocale")  private void showTaxometr(Location location) {
+        // if (Fragment6.StartTax) {
+        if (FirstTime) {
+            OldTime=NewTime;
+            NewTime= SystemClock.uptimeMillis();
+            TimeInterval=0;
+            TimeItogo = 0;
+            NewSpeed = 0;
+        }
+        else {
+            OldTime=NewTime;
+            NewTime=SystemClock.uptimeMillis();
+            TimeInterval=NewTime-OldTime;
+            TimeItogo = TimeItogo + TimeInterval;
+        }
+        OldSpeed=NewSpeed;
+        NewSpeed=location.getSpeed();
+        AverageSpeed=(NewSpeed+OldSpeed)/2;
+        Distance=AverageSpeed*TimeInterval/1000; //  м/с * сек
+
+      		/*Определяем в каком месте находимся*/
+        if (intersect(Double.parseDouble(MyVariables.Lon), Double.parseDouble(MyVariables.Lat), 45.873696, 40.084303, 45.884451, 40.130909, 45.845751, 40.168203, 45.839697, 40.130051)) tutGorod=true;
+        else tutGorod=false;
+        if (intersect(Double.parseDouble(MyVariables.Lon), Double.parseDouble(MyVariables.Lat), 45.869187, 40.083370, 45.869277, 40.091824, 45.862434, 40.100364, 45.862135, 40.082426)) tutVG=true;
+        else tutVG=false;
+        if (intersect(Double.parseDouble(MyVariables.Lon), Double.parseDouble(MyVariables.Lat), 45.854390, 40.060062, 45.890246, 40.130443, 45.836334, 40.180654, 45.810375, 40.144519)) tutPG=true;
+        else tutPG=false;
+        tutGorod=tutGorod|tutVG; //хоть город хоть военный считаем что город
+        //дальше будем искать где мы - в районе или в межгороде
+        if (intersect(Double.parseDouble(MyVariables.Lon), Double.parseDouble(MyVariables.Lat), 46.1089, 40.0307, 45.9595, 40.5001, 45.6071, 40.5629, 45.5917, 40.0397)) tutRn=true; //тут район, большой квадрат
+        else tutRn=false;
+        if (intersect(Double.parseDouble(MyVariables.Lon), Double.parseDouble(MyVariables.Lat), 45.8831, 39.8162, 45.9905, 40.0537, 45.8125, 40.1073, 45.8226, 39.8454)) tutRn2=true; //тут район, малый квадрат Новорождественская
+        else tutRn2=false;
+        tutRn=tutRn|tutRn2; //хоть большой квадрат хоть малый считаем что это район
+
+      		/* В зависимости от места выбираем тариф */
+        if (PauseTax==false ) { //если кнопка Старт не зеленая сумма не изменяется
+            if (AverageSpeed!=0) { //если скорость не равна нулю
+                if (tutRn==false) { //если это межгород
+                    //это межгород
+                    ItogKmMg=ItogKmMg+Distance;
+                    Cost = Distance*MyVariables.cost_km_n1/1000;
+                }
+                else { //если это не межгород
+                    if ((tutPG==false) & (tutGorod==false)) {  //проверяем может это район
+                        //значит это район
+                        ItogKmRn=ItogKmRn+Distance;
+                        Cost = Distance*MyVariables.cost_km_intercity/1000;
+                    }
+                    if ((tutPG==true) & (tutGorod==false)) { //если это пригород
+                        //значит это пригород
+                        ItogKmPrig=ItogKmPrig+Distance;
+                        Cost = Distance*MyVariables.cost_km_suburb/1000;
+                    }
+                    if ((tutPG==true) & (tutGorod==true)) { //если это город
+                        //значит это город
+                        ItogKmGorod=ItogKmGorod+Distance;
+                        Cost = Distance*MyVariables.cost_km_city/1000;
+                    }
+                }
+            }
+            else {
+                Cost = (MyVariables.cost_stopping / 60) * TimeInterval / 1000; //если красный светофор- новая стоимость равна 5 руб/мин 5/60 получ сек умнож на TimeInterval/1000 сек
+                TimeStay=TimeStay + TimeInterval;
+            }
+            Itogo=Itogo+Cost;
+            MyVariables.Itogo = Itogo;
+        }
+
+        //отображаем результат вычислений
+        hms = String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(TimeStay),
+                TimeUnit.MILLISECONDS.toMinutes(TimeStay) % TimeUnit.HOURS.toMinutes(1),
+                TimeUnit.MILLISECONDS.toSeconds(TimeStay) % TimeUnit.MINUTES.toSeconds(1));
+      //  if (hms.contains("null")) hms="0 c";
+        //String strItogo = String.format("%.2f",Itogo);
+     /*   Fragment2.TaxometrMain[0]="Сумма: " + String.format("%.2f",Itogo) + " руб";
+        Fragment2.TaxometrMain[1]="Время в пути: "+hms;
+        Fragment2.TaxometrMain[2]="Дистанция город: " + String.format("%.1f",ItogKmGorod) +" м"; //String.format("%1$.1f",
+        Fragment2.TaxometrMain[3]="Дистанция пригород: " + String.format("%.1f",ItogKmPrig) +" м";
+        Fragment2.TaxometrMain[4]="Дистанция район: "+String.format("%.1f",ItogKmRn)+" м";
+        Fragment2.TaxometrMain[5]="Дистанция межгород: "+String.format("%.1f",ItogKmMg)+" м";
+        Fragment2.TaxometrMain[6]="Тариф "+String.valueOf(MyVariables.cost_km_city)+" руб/км город";
+        Fragment2.TaxometrMain[7]="Тариф "+String.valueOf(MyVariables.cost_km_suburb)+" руб/км пригород";
+        Fragment2.TaxometrMain[8]="Тариф "+String.valueOf(MyVariables.cost_km_intercity)+" руб/км район";
+        Fragment2.TaxometrMain[9]="Тариф "+String.valueOf(MyVariables.cost_km_n1)+" руб/км межгород";
+        Fragment2.TaxometrMain[10]="Тариф "+String.valueOf(MyVariables.cost_stopping)+" руб/мин стоянка";
+        Fragment2.TaxometrMain[11]="Тариф "+String.valueOf(MyVariables.cost_passenger_boarding_day)+" руб посадка день";
+        Fragment2.TaxometrMain[12]="Тариф "+String.valueOf(MyVariables.cost_passenger_boarding_night)+" руб посадка ночь";
+        Fragment2.TaxometrMain[13]="Тариф "+String.valueOf(MyVariables.cost_passenger_pre_boarding_day)+" руб предвар день";
+        Fragment2.adapter.notifyDataSetChanged();*/
+        /*ActivityThree.buttonStart.setText(String.format("%.2f",Itogo) + " руб");
+        ActivityThree.tvDistance.setText("Дистанция город: " + String.format("%.1f",ItogKmGorod) +" м");
+        ActivityThree.tvStay.setText("Время в пути: "+hms);*/
+
+
+        FirstTime=false;
+
+    }
+
+    public static boolean intersect(double XLon, double YLat, double y1, double x1, double y2, double x2, double y3, double x3, double y4, double x4) {
+        //Определяется находится ли точка внутри четырехугольника, в городе или нет
+
+        boolean E214=false;
+        boolean E243=false;
+        boolean E143=false;
+        boolean E123=false;
+        boolean E423=false;
+        boolean E412=false;
+        boolean E312=false;
+        boolean E314=false;
+
+        //Пересечение отрезка E-2 с отрезком 1-4
+        d=(XLon-x2)*(y4-y1)-(YLat-y2)*(x4-x1);
+        da=(XLon-x1)*(y4-y1)-(YLat-y1)*(x4-x1);
+        db=(XLon-x2)*(YLat-y1)-(YLat-y2)*(XLon-x1);
+        if (d!=0) {
+            ta=da/d;
+            tb=db/d;
+            if ((ta>0 & ta<1) & (tb>0 & tb<1)) {
+                XIntersect=XLon+ta*(x2-XLon);
+                YIntersect=YLat+ta*(y2-YLat);
+                E214=false;
+            }
+            else E214=true;
+        }
+        //Пересечение отрезка E-2 с отрезком 4-3
+        d=(XLon-x2)*(y4-y3)-(YLat-y2)*(x4-x3);
+        da=(XLon-x3)*(y4-y3)-(YLat-y3)*(x4-x3);
+        db=(XLon-x2)*(YLat-y3)-(YLat-y2)*(XLon-x3);
+        if (d!=0) {
+            ta=da/d;
+            tb=db/d;
+            if ((ta>0 & ta<1) & (tb>0 & tb<1)) {
+                XIntersect=XLon+ta*(x2-XLon);
+                YIntersect=YLat+ta*(y2-YLat);
+                E243=false;
+            }
+            else E243=true;
+        }
+        //Пересечение отрезка E-1 с отрезком 4-3
+        d=(XLon-x1)*(y4-y3)-(YLat-y1)*(x4-x3);
+        da=(XLon-x3)*(y4-y3)-(YLat-y3)*(x4-x3);
+        db=(XLon-x1)*(YLat-y3)-(YLat-y1)*(XLon-x3);
+        if (d!=0) {
+            ta=da/d;
+            tb=db/d;
+            if ((ta>0 & ta<1) & (tb>0 & tb<1)) {
+                XIntersect=XLon+ta*(x1-XLon);
+                YIntersect=YLat+ta*(y1-YLat);
+                E143=false;
+            }
+            else E143=true;
+        }
+        //Пересечение отрезка E-1 с отрезком 2-3
+        d=(XLon-x1)*(y2-y3)-(YLat-y1)*(x2-x3);
+        da=(XLon-x3)*(y2-y3)-(YLat-y3)*(x2-x3);
+        db=(XLon-x1)*(YLat-y3)-(YLat-y1)*(XLon-x3);
+        if (d!=0) {
+            ta=da/d;
+            tb=db/d;
+            if ((ta>0 & ta<1) & (tb>0 & tb<1)) {
+                XIntersect=XLon+ta*(x1-XLon);
+                YIntersect=YLat+ta*(y1-YLat);
+                E123=false;
+            }
+            else E123=true;
+        }
+        //Пересечение отрезка E-4 с отрезком 2-3
+        d=(XLon-x4)*(y2-y3)-(YLat-y4)*(x2-x3);
+        da=(XLon-x3)*(y2-y3)-(YLat-y3)*(x2-x3);
+        db=(XLon-x4)*(YLat-y3)-(YLat-y4)*(XLon-x3);
+        if (d!=0) {
+            ta=da/d;
+            tb=db/d;
+            if ((ta>0 & ta<1) & (tb>0 & tb<1)) {
+                XIntersect=XLon+ta*(x4-XLon);
+                YIntersect=YLat+ta*(y4-YLat);
+                E423=false;
+            }
+            else E423=true;
+        }
+        //Пересечение отрезка E-4 с отрезком 1-2////////
+        d=(XLon-x4)*(y2-y1)-(YLat-y4)*(x2-x1);
+        da=(XLon-x1)*(y2-y1)-(YLat-y1)*(x2-x1);
+        db=(XLon-x4)*(YLat-y1)-(YLat-y4)*(XLon-x1);
+        if (d!=0) {
+            ta=da/d;
+            tb=db/d;
+            if ((ta>0 & ta<1) & (tb>0 & tb<1)) {
+                XIntersect=XLon+ta*(x4-XLon);
+                YIntersect=YLat+ta*(y4-YLat);
+                E412=false;
+            }
+            else E412=true;
+        }
+        //Пересечение отрезка E-3 с отрезком 1-4
+        d=(XLon-x3)*(y4-y1)-(YLat-y3)*(x4-x1);
+        da=(XLon-x1)*(y4-y1)-(YLat-y1)*(x4-x1);
+        db=(XLon-x3)*(YLat-y1)-(YLat-y3)*(XLon-x1);
+        if (d!=0) {
+            ta=da/d;
+            tb=db/d;
+            if ((ta>0 & ta<1) & (tb>0 & tb<1)) {
+                XIntersect=XLon+ta*(x3-XLon);
+                YIntersect=YLat+ta*(y3-YLat);
+                E314=false;
+            }
+            else E314=true;
+        }
+        //Пересечение отрезка E-3 с отрезком 1-2
+        d=(XLon-x3)*(y2-y1)-(YLat-y3)*(x2-x1);
+        da=(XLon-x1)*(y2-y1)-(YLat-y1)*(x2-x1);
+        db=(XLon-x3)*(YLat-y1)-(YLat-y3)*(XLon-x1);
+        if (d!=0) {
+            ta=da/d;
+            tb=db/d;
+            if ((ta>0 & ta<1) & (tb>0 & tb<1)) {
+                XIntersect=XLon+ta*(x3-XLon);
+                YIntersect=YLat+ta*(y3-YLat);
+                E312=false;
+            }
+            else E312=true;
+        }
+        if ((E214&E243)&(E143&E123)&(E423&E412)&(E312&E314)) return true;
+        else return false;
+
+        //закончили определение четырехугольника мы в городе
+
+
+    }
 }

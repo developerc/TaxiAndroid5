@@ -26,5 +26,6 @@ public class MyVariables {
     public static String Lat=""; //широта
     public static String Lon=""; //долгота
     public static boolean InOuExcept = false;
+    public static float Itogo=0;
 
 }
