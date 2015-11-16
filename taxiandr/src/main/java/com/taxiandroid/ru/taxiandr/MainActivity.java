@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -76,6 +77,7 @@ public class MainActivity extends AppCompatActivity
     public static String ClkTel = "";
     public static String ClkPre = "";
 
+    public static ArrayList<Integer> plyzak = new ArrayList<Integer>();
     public static ArrayList<Integer> zakaz = new ArrayList<Integer>();
     public static ArrayList<String> telefon = new ArrayList<String>();
     public static ArrayList<String> kode = new ArrayList<String>();
@@ -116,6 +118,9 @@ public class MainActivity extends AppCompatActivity
     static boolean FirstTime=true;
     static boolean PauseTax=true;
     static String hms;
+
+    MenuItem item2, item3;
+    MediaPlayer mediaPlayer;
 
    // Intent myIntent;
 
@@ -181,6 +186,7 @@ public class MainActivity extends AppCompatActivity
                     new GetAsincTask().execute(httpPath);
                     if (ZakazEmpty == false) {
                         updateUsersList(); //обновляем ListView
+                        PlyNewZak();
                     } else {
                         populateUsersList();
                     }
@@ -361,6 +367,8 @@ public class MainActivity extends AppCompatActivity
             // JSONArray jsonMainArr = jo.getJSONArray("myjsonarray");
             JSONArray jsonMainArr = new JSONArray(jsonString);
 
+            plyzak=zakaz; //запомнили номера прошлых заказов
+            //for (int i=0; i<plyzak.size(); i++) Log.d(TAG, Integer.toString(plyzak.get(i)));
             //Очищаем ArrayList
             zakaz.clear();
             telefon.clear();
@@ -388,7 +396,8 @@ public class MainActivity extends AppCompatActivity
 
                 Log.d(TAG, "Заказ=" + zakaz.get(i) + "  Адрес:" + adres.get(i) + "  Предварительный:" + predvar.get(i) + " Дата:" + dat.get(i) + " Время:" + tim.get(i).substring(11, 16) + " Машина:" + car.get(i));
             }
-
+            /*mediaPlayer = MediaPlayer.create(this, R.raw.sound_5);
+            mediaPlayer.start();*/
         }
 
 
@@ -532,6 +541,16 @@ public class MainActivity extends AppCompatActivity
             // decide what to show in the action bar.
             getMenuInflater().inflate(R.menu.main, menu);
             restoreActionBar();
+
+            item2 = menu.findItem(R.id.item2); //нашли меню итем
+            item3 = menu.findItem(R.id.item3); //нашли меню итем
+            /*item4 = menu.findItem(R.id.item4); //нашли меню итем
+            item5 = menu.findItem(R.id.item5); //нашли меню итем
+            */
+            iconINETyes();
+            iconINETno();
+            iconGPSyes();
+            iconGPSno();
             return true;
         }
         return super.onCreateOptionsMenu(menu);
@@ -759,24 +778,15 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onLocationChanged(Location location) {
             //проверка доступен ли интернет
-           /* if(isConnected()){
-                //showLocation(location);
-                if (Fragment3.ErrNone) {
-                    iconINETyes();
-                } else iconINETyellow();
-
-            }
-            else	{iconINETno();  } */
+            if(isConnected()) iconINETyes();
+            else iconINETno();
             //проверка включен ли GPS
             if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-               // iconGPSyes();
+                iconGPSyes();
                // Toast.makeText(getApplicationContext(), MyVariables.Lat + "  " + MyVariables.Lon + "  " + location.getSpeed(), Toast.LENGTH_SHORT).show();
-
                showLocation(location);
-
             }
-           // else iconGPSno();
-
+            else iconGPSno();
         }
 
         @Override
@@ -1068,7 +1078,46 @@ public class MainActivity extends AppCompatActivity
         else return false;
 
         //закончили определение четырехугольника мы в городе
-
-
     }
+    public void iconINETyes() { //собственно функция смены иконки
+        if (FlagAppStarted)	 item3.setIcon(R.drawable.ic_action_globe);
+    }
+
+    public void iconINETno() { //собственно функция смены иконки
+        if (FlagAppStarted)  item3.setIcon(R.drawable.ic_action_globe_2);
+    }
+
+    public void iconGPSyes() { //собственно функция смены иконки
+        if (FlagAppStarted)  item2.setIcon(R.drawable.ic_action_location_2);
+    }
+
+    public void iconGPSno() { //собственно функция смены иконки
+        if (FlagAppStarted)  item2.setIcon(R.drawable.ic_action_location_3);
+    }
+     public void PlyNewZak(){
+         boolean flagNewZak = false;
+         boolean flagsred = false;
+         boolean flagPlyMus = false;
+         for (int i=0; i<zakaz.size(); i++) {
+             /*if (!plyzak.contains(zakaz.get(i))) {
+                flagNewZak = true;
+             }*/
+             for (int k=0; k<plyzak.size(); k++) {
+                 if (plyzak.get(k)==zakaz.get(i)) flagsred = true;
+                 else flagsred =false;
+
+                     Log.d(TAG, "plyzak="+Integer.toString(plyzak.get(k)) +"  " + "zakaz="+Integer.toString(zakaz.get(i)) +"  flagsred=" + flagsred);
+                flagNewZak=flagNewZak|flagsred;
+                 Log.d(TAG, "flagNewZak=" + flagNewZak);
+             }
+             if (flagNewZak==false) flagPlyMus=true;
+             Log.d(TAG, "------------flagNewZak=" + flagNewZak);
+             flagNewZak=false;
+         }
+         if (flagPlyMus) {
+             mediaPlayer = MediaPlayer.create(this, R.raw.sound_5);
+             mediaPlayer.start();
+         }
+     }
+
 }
