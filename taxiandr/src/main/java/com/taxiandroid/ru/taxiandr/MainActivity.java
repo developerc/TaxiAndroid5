@@ -117,6 +117,9 @@ public class MainActivity extends AppCompatActivity
     static boolean PauseTax=true;
     static String hms;
 
+    MenuItem item2, item3;
+
+
    // Intent myIntent;
 
     /**
@@ -532,6 +535,12 @@ public class MainActivity extends AppCompatActivity
             // decide what to show in the action bar.
             getMenuInflater().inflate(R.menu.main, menu);
             restoreActionBar();
+
+            item2 = menu.findItem(R.id.item2);
+            item3 = menu.findItem(R.id.item3);
+
+            iconINETyes();
+            iconINETno();
             return true;
         }
         return super.onCreateOptionsMenu(menu);
@@ -759,14 +768,11 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onLocationChanged(Location location) {
             //проверка доступен ли интернет
-           /* if(isConnected()){
+             if(isConnected()){
                 //showLocation(location);
-                if (Fragment3.ErrNone) {
-                    iconINETyes();
-                } else iconINETyellow();
-
+                iconINETyes();
             }
-            else	{iconINETno();  } */
+            else	{iconINETno();  }
             //проверка включен ли GPS
             if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
                // iconGPSyes();
@@ -1070,5 +1076,13 @@ public class MainActivity extends AppCompatActivity
         //закончили определение четырехугольника мы в городе
 
 
+    }
+
+    public void iconINETyes() { //собственно функция смены иконки
+        if (FlagAppStarted)	 item2.setIcon(R.drawable.ic_action_location_2);
+    }
+
+    public void iconINETno() { //собственно функция смены иконки
+        if (FlagAppStarted)  item2.setIcon(R.drawable.ic_action_location_3);
     }
 }
