@@ -1,6 +1,7 @@
 package com.taxiandroid.ru.taxiandr;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -29,6 +30,8 @@ public class ActivityThree extends AppCompatActivity {
     Calendar cal;
     private static final String TAG = "myLogs";
     final Handler myHandler = new Handler();
+   // MediaPlayer mediaPlayer;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,6 +116,8 @@ public class ActivityThree extends AppCompatActivity {
         MainActivity.ItogKmMg=0;
         MainActivity.Itogo=0;
         finish();
+        /*mediaPlayer = MediaPlayer.create(this, R.raw.sound_5);
+        mediaPlayer.start();*/
     }
 
 
