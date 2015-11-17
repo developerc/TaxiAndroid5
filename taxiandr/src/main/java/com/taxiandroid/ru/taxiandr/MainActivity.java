@@ -121,6 +121,7 @@ public class MainActivity extends AppCompatActivity
 
     MenuItem item2, item3;
     MediaPlayer mediaPlayer;
+    boolean flagMusYes = false;
 
    // Intent myIntent;
 
@@ -180,9 +181,9 @@ public class MainActivity extends AppCompatActivity
 
     final Runnable myRunnable = new Runnable() {
         public void run() {
-            Log.d(TAG, "Таймер работает! ");
+           // Log.d(TAG, "Таймер работает! ");
             if (i != 1) { // если не первый раз
-                if (flagClkLV == false) { //усли не кликнули на ListView
+                if (flagClkLV == false) { //если не кликнули на ListView
                     new GetAsincTask().execute(httpPath);
                     if (ZakazEmpty == false) {
                         updateUsersList(); //обновляем ListView
@@ -352,12 +353,16 @@ public class MainActivity extends AppCompatActivity
 
     //обработка JSON строки
     public void ZakazJson(String jsonString) throws JSONException {
+
+        plyzak.clear();
         Log.d(TAG, "*******************    обрабатываем JSON строку     *****************************");
         if (jsonString.contains("ERROR: zakazi not found")) {
             ZakazEmpty = true;
+            plyzak.clear();
             Log.d(TAG, "Заказов нет");
         } else {
             Log.d(TAG, "Заказы есть");
+            Log.d(TAG, "");
             ZakazEmpty = false;
             // jsonString = "{\"myjsonarray\"="+jsonString+"}";
             Log.d(TAG, jsonString);
@@ -367,7 +372,9 @@ public class MainActivity extends AppCompatActivity
             // JSONArray jsonMainArr = jo.getJSONArray("myjsonarray");
             JSONArray jsonMainArr = new JSONArray(jsonString);
 
-            plyzak=zakaz; //запомнили номера прошлых заказов
+             //запомнили номера прошлых заказов
+            plyzak.clear();
+            for (int i=0; i<zakaz.size(); i++) plyzak.add(zakaz.get(i));
             //for (int i=0; i<plyzak.size(); i++) Log.d(TAG, Integer.toString(plyzak.get(i)));
             //Очищаем ArrayList
             zakaz.clear();
@@ -399,8 +406,28 @@ public class MainActivity extends AppCompatActivity
             /*mediaPlayer = MediaPlayer.create(this, R.raw.sound_5);
             mediaPlayer.start();*/
         }
+//-----------------------------------------------------------------------------------------
+      /*  boolean flagsred2 = false;
+        boolean flagsred = false;
+        boolean flagPlyMus = false;
 
+        for (int i=0; i<zakaz.size(); i++) {
 
+            for (int k=0; k<plyzak.size(); k++) {
+                if (plyzak.get(k)==zakaz.get(i)) flagsred = true;
+                else flagsred =false;
+
+                Log.d(TAG, "plyzak="+Integer.toString(plyzak.get(k)) +"  " + "zakaz="+Integer.toString(zakaz.get(i)) +"  flagsred=" + flagsred);
+                flagsred2=flagsred2|flagsred;
+                Log.d(TAG, "flagsred2=" + flagsred2);
+            }
+            if (flagsred2==false & ZakazEmpty==false) flagPlyMus=true;
+            Log.d(TAG, "------------flagsred2=" + flagsred2);
+            flagsred2=false;
+        }
+        Log.d(TAG, "------------flagPlyMus=" + flagPlyMus);
+        flagMusYes=flagPlyMus;*/
+       // Log.d(TAG, "------------flagMusYes=" + flagMusYes);
     }
 
     /*class HTTGATask extends AsyncTask<String, Void, Void> {
@@ -1094,14 +1121,13 @@ public class MainActivity extends AppCompatActivity
     public void iconGPSno() { //собственно функция смены иконки
         if (FlagAppStarted)  item2.setIcon(R.drawable.ic_action_location_3);
     }
+
      public void PlyNewZak(){
-         boolean flagNewZak = false;
+      /*   boolean flagNewZak = false;
          boolean flagsred = false;
          boolean flagPlyMus = false;
          for (int i=0; i<zakaz.size(); i++) {
-             /*if (!plyzak.contains(zakaz.get(i))) {
-                flagNewZak = true;
-             }*/
+
              for (int k=0; k<plyzak.size(); k++) {
                  if (plyzak.get(k)==zakaz.get(i)) flagsred = true;
                  else flagsred =false;
@@ -1113,8 +1139,30 @@ public class MainActivity extends AppCompatActivity
              if (flagNewZak==false) flagPlyMus=true;
              Log.d(TAG, "------------flagNewZak=" + flagNewZak);
              flagNewZak=false;
+         }*/
+         boolean flagsred2 = false;
+         boolean flagsred = false;
+         boolean flagPlyMus = false;
+
+         for (int i=0; i<zakaz.size(); i++) {
+
+             for (int k=0; k<plyzak.size(); k++) {
+                 if (plyzak.get(k)==zakaz.get(i)) flagsred = true;
+                 else flagsred =false;
+
+                 Log.d(TAG, "plyzak="+Integer.toString(plyzak.get(k)) +"  " + "zakaz="+Integer.toString(zakaz.get(i)) +"  flagsred=" + flagsred);
+                 flagsred2=flagsred2|flagsred;
+                 Log.d(TAG, "flagsred2=" + flagsred2);
+             }
+             if (flagsred2==false & ZakazEmpty==false) flagPlyMus=true;
+             Log.d(TAG, "------------flagsred2=" + flagsred2);
+             flagsred2=false;
          }
-         if (flagPlyMus) {
+         Log.d(TAG, "------------flagPlyMus=" + flagPlyMus);
+         flagMusYes=flagPlyMus;
+
+         Log.d(TAG, "------------flagMusYes=" + flagMusYes);
+         if (flagMusYes) {
              mediaPlayer = MediaPlayer.create(this, R.raw.sound_5);
              mediaPlayer.start();
          }
