@@ -13,7 +13,6 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
@@ -46,6 +45,11 @@
         <activity
             android:name=".ActivityFive"
             android:label="@string/title_activity_activity_five" >
+        </activity>
+        <activity
+            android:name=".ActivitySix"
+            android:label="@string/title_activity_activity_six"
+            android:theme="@style/AppTheme.NoActionBar" >
         </activity>
     </application>
 

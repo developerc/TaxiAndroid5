@@ -33,5 +33,9 @@
     <string name="text_stay">Стоянка: 0 сек</string>
     <string name="text_inet">Интернет</string>
     <string name="text_gps">GPS</string>
+    <string name="title_activity_activity_six">Поездки</string>
+    <string name="gobackwards">Назад</string>
+    <string name="fst10">Поездки</string>
+    <string name="clear">Очистить</string>
 
 </resources>
