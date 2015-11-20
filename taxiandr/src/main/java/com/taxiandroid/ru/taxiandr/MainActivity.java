@@ -864,7 +864,7 @@ public class MainActivity extends AppCompatActivity
         }
         //if (StartTax==true) {  myIntent.putExtra("btnStr","Proba");  }
         //ActivityThree.buttonStart.setText("Проба");
-        Toast.makeText(getApplicationContext(), "StartTax=" +StartTax + "  " + location.getSpeed()  + "  " +  NewSpeed   + "  " +  Itogo, Toast.LENGTH_SHORT).show();
+       // Toast.makeText(getApplicationContext(), "StartTax=" +StartTax + "  " + location.getSpeed()  + "  " +  NewSpeed   + "  " +  Itogo, Toast.LENGTH_SHORT).show();
     }
 
     @SuppressLint("DefaultLocale") private String formatLat(Location location) {
@@ -1148,7 +1148,7 @@ public class MainActivity extends AppCompatActivity
          for (int i=0; i<zakaz.size(); i++) {
 
              for (int k=0; k<plyzak.size(); k++) {
-                 if (plyzak.get(k)==zakaz.get(i)) flagsred = true;
+                 if (plyzak.get(k) - zakaz.get(i)==0) flagsred = true;
                  else flagsred =false;
 
                  Log.d(TAG, "plyzak="+Integer.toString(plyzak.get(k)) +"  " + "zakaz="+Integer.toString(zakaz.get(i)) +"  flagsred=" + flagsred);

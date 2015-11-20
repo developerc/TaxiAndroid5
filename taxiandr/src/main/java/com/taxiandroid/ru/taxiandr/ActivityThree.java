@@ -116,7 +116,7 @@ public class ActivityThree extends AppCompatActivity {
     private void clickStop() {
         // шлем запрос на удаление заказа из таблицы заказов
         new PostAsincTask().execute(postPath + "complete");
-        mDatabaseHelper.addTaximeter(new Taximeter(MainActivity.ClkTel,MainActivity.ClkAdr, Float.toString(MainActivity.Itogo) +" руб", Float.toString(MainActivity.ItogKmGorod)+" м гор", Float.toString(MainActivity.ItogKmPrig)+" м пригор",getCurrentTimeStamp())); //добавляем запись в базу
+        mDatabaseHelper.addTaximeter(new Taximeter(MainActivity.ClkTel,MainActivity.ClkAdr, Float.toString(MainActivity.Itogo) +" руб", Float.toString(MainActivity.ItogKmGorod)+" м гор", Float.toString(MainActivity.ItogKmPrig)+" м пригор", Float.toString(MainActivity.ItogKmRn)+" м район", Float.toString(MainActivity.ItogKmMg)+" м межгор",getCurrentTimeStamp())); //добавляем запись в базу
         Log.d(TAG, "*******************    Добавляем в базу    *****************************");
        // mDatabaseHelper.addTaximeter(new Taximeter("8619641256", "Адрес", "100", "2015-11-20 11:00")); //добавляем запись в базу
 

@@ -88,6 +88,8 @@ public class DatabaseHelper extends SQLiteOpenHelper implements BaseColumns {
         values.put(COLUMN_SUMMA, taximeter.getSumma());
         values.put(COLUMN_DGOR, taximeter.getmDgor());
         values.put(COLUMN_DPRIGOR, taximeter.getmDprigor());
+        values.put(COLUMN_DRAION, taximeter.getmDraion());
+        values.put(COLUMN_DMGOR, taximeter.getmDmgor());
         values.put(COLUMN_ETIM, taximeter.getEtim());
 
 
@@ -98,10 +100,10 @@ public class DatabaseHelper extends SQLiteOpenHelper implements BaseColumns {
     //получить запись таксометра
     public Taximeter getTaximeter(int id) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(DATABASE_TABLE, new String[]{COLUMN_ID, COLUMN_DTIM, COLUMN_PSTART, COLUMN_SUMMA,COLUMN_DGOR,COLUMN_DPRIGOR, COLUMN_ETIM}, COLUMN_ID + "=?", new String[]{String.valueOf(id)}, null, null, null, null);
+        Cursor cursor = db.query(DATABASE_TABLE, new String[]{COLUMN_ID, COLUMN_DTIM, COLUMN_PSTART, COLUMN_SUMMA,COLUMN_DGOR,COLUMN_DPRIGOR,COLUMN_DRAION,COLUMN_DMGOR, COLUMN_ETIM}, COLUMN_ID + "=?", new String[]{String.valueOf(id)}, null, null, null, null);
         if (cursor != null) cursor.moveToFirst();
         Taximeter taximeter = new Taximeter(Integer.parseInt(cursor.getString(0)),
-                cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getString(5), cursor.getString(6));
+                cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4), cursor.getString(5), cursor.getString(6), cursor.getString(7), cursor.getString(8));
                 return taximeter;
     }
 
@@ -121,8 +123,11 @@ public class DatabaseHelper extends SQLiteOpenHelper implements BaseColumns {
                 taximeter.setDtim(cursor.getString(1));
                 taximeter.setPstart(cursor.getString(2));
                 taximeter.setSumma(cursor.getString(3));
-                taximeter.setEtim(cursor.getString(4));
-                taximeter.setEtim(cursor.getString(5));
+                taximeter.setmDgor(cursor.getString(4));
+                taximeter.setmDprigor(cursor.getString(5));
+                taximeter.setmDraion(cursor.getString(6));
+                taximeter.setmDmgor(cursor.getString(7));
+                taximeter.setEtim(cursor.getString(8));
                 taximeterList.add(taximeter);
             } while (cursor.moveToNext());
         }

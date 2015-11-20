@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView
+
+    android:id="@+id/tvSix"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="10dp"
+    android:paddingRight="6dp"
+    android:paddingTop="6dp"
+    android:paddingBottom="6dp"
+    android:text="@string/sms_button"
+    android:textColor="@drawable/white_color"
+    android:background="@drawable/gray_blue_color"
+
+    xmlns:android="http://schemas.android.com/apk/res/android" />
