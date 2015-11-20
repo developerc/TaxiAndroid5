@@ -537,7 +537,8 @@ public class MainActivity extends AppCompatActivity
                 startActivity(new Intent(getApplicationContext(), ActivityFive.class));
                 break;
             case 4:
-                mTitle = getString(R.string.title_section4);
+               // mTitle = getString(R.string.title_section4);
+                startActivity(new Intent(getApplicationContext(), ActivitySix.class));
                 break;
             case 5:
                 //mTitle = getString(R.string.title_section5);

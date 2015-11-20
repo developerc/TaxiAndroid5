@@ -41,6 +41,7 @@ public class ActivityThree extends AppCompatActivity {
     final Handler myHandler = new Handler();
     String postPath;
     String errPost = "";
+    private static DatabaseHelper mDatabaseHelper;
     // MediaPlayer mediaPlayer;
 
 
@@ -72,6 +73,8 @@ public class ActivityThree extends AppCompatActivity {
                 UpdateGUI();
             }
         }, 0, 5000);
+
+        mDatabaseHelper = new DatabaseHelper(this);
 
         postPath = MyVariables.HTTPAdress + MyVariables.SAVED_TEXT_1 + "/" + MyVariables.SAVED_TEXT_2 + "/order/";
     }
@@ -113,7 +116,9 @@ public class ActivityThree extends AppCompatActivity {
     private void clickStop() {
         // шлем запрос на удаление заказа из таблицы заказов
         new PostAsincTask().execute(postPath + "complete");
-
+        mDatabaseHelper.addTaximeter(new Taximeter(MainActivity.ClkTel,MainActivity.ClkAdr, Float.toString(MainActivity.Itogo) +" руб", Float.toString(MainActivity.ItogKmGorod)+" м гор", Float.toString(MainActivity.ItogKmPrig)+" м пригор",getCurrentTimeStamp())); //добавляем запись в базу
+        Log.d(TAG, "*******************    Добавляем в базу    *****************************");
+       // mDatabaseHelper.addTaximeter(new Taximeter("8619641256", "Адрес", "100", "2015-11-20 11:00")); //добавляем запись в базу
 
         MainActivity.StartTax = false; //таксометр остановлен
         MainActivity.PauseTax = true;
