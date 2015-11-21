@@ -184,7 +184,10 @@ public class MainActivity extends AppCompatActivity
            // Log.d(TAG, "Таймер работает! ");
             if (i != 1) { // если не первый раз
                 if (flagClkLV == false) { //если не кликнули на ListView
-                    new GetAsincTask().execute(httpPath);
+                    double minost=i%4;
+                    if (minost==0)  //каждую минуту отсылаем координаты машины
+                       new LonLatAsincTask().execute(MyVariables.HTTPAdress+MyVariables.SAVED_TEXT_1+"/"+MyVariables.SAVED_TEXT_2+"/setcoord");
+                    else new GetAsincTask().execute(httpPath);
                     if (ZakazEmpty == false) {
                         updateUsersList(); //обновляем ListView
                         PlyNewZak();
@@ -1168,5 +1171,71 @@ public class MainActivity extends AppCompatActivity
              mediaPlayer.start();
          }
      }
+
+    public class  LonLatAsincTask extends AsyncTask<String, Void, Void> {
+        String response = "";
+
+        @Override
+        protected Void doInBackground(String... params) {
+            Log.d("LonLat", "*******************    POST Lon, Lat   *****************************");
+            String url = params[0];
+            JSONObject jsonBody;
+            String requestBody;
+            HttpURLConnection urlConnection = null;
+            try {
+                jsonBody = new JSONObject();
+                jsonBody.put("lon", MyVariables.Lon);
+                jsonBody.put("lat", MyVariables.Lat);
+                requestBody = jsonBody.toString();
+                urlConnection = (HttpURLConnection) Utils.makeRequest("POST", url, null, "application/json", requestBody);
+                if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    String line;
+                    BufferedReader br=new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    while ((line=br.readLine()) != null) {
+                        response+=line;
+                    }
+                    MyVariables.InOuExcept = false;
+                    Log.d("LonLat", response);
+                    try {
+                        JSONObject jo =  new JSONObject(response);
+                        errPost= jo.getString("error");
+                        Log.d("LonLat", String.valueOf(errPost));
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    // Log.d(TAG, String.valueOf(errPost));
+                } else {
+                    // Toast.makeText(getApplicationContext(), "Ошибка ответа сервера", Toast.LENGTH_SHORT).show();
+                    Log.d("LonLat", String.valueOf(urlConnection.getResponseCode()));
+                }
+
+            } catch (JSONException | IOException e) {
+                MyVariables.InOuExcept = true;
+                e.printStackTrace();
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+
+                return null;
+            }
+        }
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            //получили JSON строку с сервера
+            if  (MyVariables.InOuExcept) {
+                Toast.makeText(getApplicationContext(), "Ошибка соединения с сервером!", Toast.LENGTH_SHORT).show();} else {
+                if (errPost.contains("none")) {
+                   // Toast.makeText(getApplicationContext(), "Сервер ответил ОК", Toast.LENGTH_SHORT).show();
+                    //startActivity(new Intent(getApplicationContext(), ActivityTwo.class));
+                } else {
+                    Toast.makeText(getApplicationContext(), "Сервер ответил Ошибка", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+        }
+    }
 
 }
