@@ -27,5 +27,6 @@ public class MyVariables {
     public static String Lon=""; //долгота
     public static boolean InOuExcept = false;
     public static float Itogo=0;
+   // public static int indexArrList = -1;
 
 }

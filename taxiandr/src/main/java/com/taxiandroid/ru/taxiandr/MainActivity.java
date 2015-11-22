@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity
     MenuItem item2, item3;
     MediaPlayer mediaPlayer;
     boolean flagMusYes = false;
+    static boolean GettingZak = false;
 
    // Intent myIntent;
 
@@ -187,7 +188,7 @@ public class MainActivity extends AppCompatActivity
                     double minost=i%4;
                     if (minost==0)  //каждую минуту отсылаем координаты машины
                        new LonLatAsincTask().execute(MyVariables.HTTPAdress+MyVariables.SAVED_TEXT_1+"/"+MyVariables.SAVED_TEXT_2+"/setcoord");
-                    else new GetAsincTask().execute(httpPath);
+                    else new GetAsincTask().execute(httpPath); //или получаем список заказов
                     if (ZakazEmpty == false) {
                         updateUsersList(); //обновляем ListView
                         PlyNewZak();
@@ -290,6 +291,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected Void doInBackground(String... params) {
+            GettingZak = true;
 
             try {
                 Log.d(TAG, "*******************    Open Connection    *****************************");
@@ -348,6 +350,7 @@ public class MainActivity extends AppCompatActivity
                     e.printStackTrace();
                 }
             }
+            GettingZak = false;
 
             super.onPostExecute(result);
         }
@@ -431,7 +434,7 @@ public class MainActivity extends AppCompatActivity
         Log.d(TAG, "------------flagPlyMus=" + flagPlyMus);
         flagMusYes=flagPlyMus;*/
        // Log.d(TAG, "------------flagMusYes=" + flagMusYes);
-    }
+    }  //конец ZakazJson
 
     /*class HTTGATask extends AsyncTask<String, Void, Void> {
 
@@ -759,6 +762,34 @@ public class MainActivity extends AppCompatActivity
             return false;
     }
 
+    /*
+    @SuppressLint("NewApi")
+    @Override
+    protected void onRestart() { //
+        super.onRestart();
+        if (MyVariables.indexArrList>=0) {
+            Log.d(TAG, "MyVariables.indexArrList = "+ MyVariables.indexArrList);
+            Log.d(TAG, "zakaz.size = "+ zakaz.size() + " значение "+zakaz.get(0));
+            Log.d(TAG, "telefon.size = "+ telefon.size() + " значение "+telefon.get(0));
+            Log.d(TAG, "kode.size = "+ kode.size() + " значение "+kode.get(0));
+            Log.d(TAG, "dat.size = "+ dat.size() + " значение "+dat.get(0));
+            Log.d(TAG, "tim.size = "+ tim.size() + " значение "+tim.get(0));
+            Log.d(TAG, "adres.size = "+ adres.size() + " значение "+adres.get(0));
+            Log.d(TAG, "car.size = "+ car.size() + " значение "+car.get(0));
+            Log.d(TAG, "predvar.size = "+ predvar.size() + " значение "+predvar.get(0));
+            zakaz.remove(0);
+            telefon.remove(0);
+            kode.remove(0);
+            dat.remove(0);
+            tim.remove(0);
+            adres.remove(0);
+          //  car.remove(0);
+          // predvar.remove(0);
+
+            MyVariables.indexArrList = -1;
+    }
+    }  */
+
     @SuppressLint("NewApi")
     @Override
     protected void onResume() { //запускаем таксометр и определитель координат когда активити видно
@@ -774,6 +805,20 @@ public class MainActivity extends AppCompatActivity
 
         //конец получения настроек с сервера
         FlagAppStarted = true;
+
+        //когда закрываем Activity таксометра надо быстрей обновить список заказов
+        Log.d(TAG, "******************* сработал OnResume   *****************************");
+        if (GettingZak == false) { //если в данный момент не идет получение заказа
+            new GetAsincTask().execute(httpPath);
+
+            if (ZakazEmpty == false) {
+                updateUsersList(); //обновляем ListView
+                PlyNewZak();
+            } else {
+                populateUsersList();
+            }
+            Log.d(TAG, "******************* отправили GetAsincTask   *****************************");
+        }
     }
 
     @SuppressLint("NewApi")
