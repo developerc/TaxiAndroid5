@@ -7,6 +7,7 @@
     <string name="title_section4">- Заказы</string>
     <string name="title_section5">- Таксометр</string>
     <string name="title_section6">- Выход</string>
+    <string name="title_section7">- Очередь</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -37,5 +38,7 @@
     <string name="gobackwards">Назад</string>
     <string name="fst10">Поездки</string>
     <string name="clear">Очистить</string>
+    <string name="title_activity_activity_seven">Очередь</string>
+
 
 </resources>

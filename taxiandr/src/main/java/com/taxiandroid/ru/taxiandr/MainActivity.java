@@ -554,6 +554,9 @@ public class MainActivity extends AppCompatActivity
                 //startActivity(myIntent);
                 break;
             case 6:
+                startActivity(new Intent(getApplicationContext(), ActivitySeven.class));
+                break;
+            case 7:
                 finish();
                 break;
         }
