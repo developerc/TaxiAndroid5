@@ -75,8 +75,9 @@ public class ActivitySix extends AppCompatActivity implements View.OnClickListen
             // Считываем все контакты в ListView
             List<Taximeter> contacts = mDatabaseHelper.getAllTaximeter();
 
-            ArrayAdapter<Taximeter> adapter = new ArrayAdapter<Taximeter>(this, android.R.layout.simple_list_item_1,
-                    android.R.id.text1, contacts);
+//            ArrayAdapter<Taximeter> adapter = new ArrayAdapter<Taximeter>(this, android.R.layout.simple_list_item_1, android.R.id.text1, contacts);
+            ArrayAdapter<Taximeter> adapter = new ArrayAdapter<Taximeter>(this, R.layout.item_six,
+                    R.id.tvSix, contacts);
             ListView catsListView = (ListView) findViewById(R.id.lvMain);
             catsListView.setAdapter(adapter);
         }

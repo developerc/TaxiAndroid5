@@ -13,6 +13,8 @@ public class Taximeter {
     private String mEtim;
     private String mDgor;
     private String mDprigor;
+    private String mDraion;
+    private String mDmgor;
 
     // Пустой констуктор
     public Taximeter() {
@@ -20,7 +22,7 @@ public class Taximeter {
     }
 
     // Конструктор с параметрами
-    public Taximeter(int id, String dtim, String pstart, String summa, String etim, String dgor, String dprigor) {
+    public Taximeter(int id, String dtim, String pstart, String summa, String dgor, String dprigor, String draion, String dmgor, String etim) {
         this._id = id;
         this.mDtim = dtim;
         this.mPstart = pstart;
@@ -28,16 +30,20 @@ public class Taximeter {
         this.mEtim = etim;
         this.mDgor = dgor;
         this.mDprigor = dprigor;
+        this.mDraion = draion;
+        this.mDmgor = dmgor;
     }
 
     // Конструктор с параметрами
-    public Taximeter(String dtim, String pstart, String summa, String etim, String dgor, String dprigor) {
+    public Taximeter(String dtim, String pstart, String summa, String dgor, String dprigor, String draion, String dmgor, String etim) {
         this.mDtim = dtim;
         this.mPstart = pstart;
         this.mSumma = summa;
         this.mEtim = etim;
         this.mDgor = dgor;
         this.mDprigor = dprigor;
+        this.mDraion = draion;
+        this.mDmgor = dmgor;
     }
 
     // Создание геттеров-сеттеров
@@ -97,8 +103,25 @@ public class Taximeter {
     public void setmDprigor(String dprigor) {
         this.mDprigor = dprigor;
     }
+
+    public String getmDraion() {
+        return this.mDraion;
+    }
+
+    public void setmDraion(String draion) {
+        this.mDraion = draion;
+    }
+
+    public String getmDmgor() {
+        return this.mDmgor;
+    }
+
+    public void setmDmgor(String dmgor) {
+        this.mDmgor = dmgor;
+    }
+
     @Override
     public String toString() {
-        return this._id + " , " + this.mDtim + " , " + this.mPstart + " , " + this.mSumma + " , "+this.mDgor + " , "+this.mDprigor +" , "+ this.mEtim;
+        return this._id + " , " + this.mDtim + " , " + this.mPstart + " , " + this.mSumma + " , " + this.mDgor + " , " + this.mDprigor + " , " + this.mDraion + " , " + this.mDmgor + " , " + this.mEtim;
     }
 }

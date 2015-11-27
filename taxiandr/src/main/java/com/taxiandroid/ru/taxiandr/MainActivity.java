@@ -122,6 +122,7 @@ public class MainActivity extends AppCompatActivity
     MenuItem item2, item3;
     MediaPlayer mediaPlayer;
     boolean flagMusYes = false;
+    static boolean GettingZak = false;
 
    // Intent myIntent;
 
@@ -184,7 +185,10 @@ public class MainActivity extends AppCompatActivity
            // Log.d(TAG, "Таймер работает! ");
             if (i != 1) { // если не первый раз
                 if (flagClkLV == false) { //если не кликнули на ListView
-                    new GetAsincTask().execute(httpPath);
+                    double minost=i%4;
+                    if (minost==0)  //каждую минуту отсылаем координаты машины
+                       new LonLatAsincTask().execute(MyVariables.HTTPAdress+MyVariables.SAVED_TEXT_1+"/"+MyVariables.SAVED_TEXT_2+"/setcoord");
+                    else new GetAsincTask().execute(httpPath); //или получаем список заказов
                     if (ZakazEmpty == false) {
                         updateUsersList(); //обновляем ListView
                         PlyNewZak();
@@ -287,6 +291,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected Void doInBackground(String... params) {
+            GettingZak = true;
 
             try {
                 Log.d(TAG, "*******************    Open Connection    *****************************");
@@ -345,6 +350,7 @@ public class MainActivity extends AppCompatActivity
                     e.printStackTrace();
                 }
             }
+            GettingZak = false;
 
             super.onPostExecute(result);
         }
@@ -428,7 +434,7 @@ public class MainActivity extends AppCompatActivity
         Log.d(TAG, "------------flagPlyMus=" + flagPlyMus);
         flagMusYes=flagPlyMus;*/
        // Log.d(TAG, "------------flagMusYes=" + flagMusYes);
-    }
+    }  //конец ZakazJson
 
     /*class HTTGATask extends AsyncTask<String, Void, Void> {
 
@@ -548,6 +554,9 @@ public class MainActivity extends AppCompatActivity
                 //startActivity(myIntent);
                 break;
             case 6:
+                startActivity(new Intent(getApplicationContext(), ActivitySeven.class));
+                break;
+            case 7:
                 finish();
                 break;
         }
@@ -756,6 +765,34 @@ public class MainActivity extends AppCompatActivity
             return false;
     }
 
+    /*
+    @SuppressLint("NewApi")
+    @Override
+    protected void onRestart() { //
+        super.onRestart();
+        if (MyVariables.indexArrList>=0) {
+            Log.d(TAG, "MyVariables.indexArrList = "+ MyVariables.indexArrList);
+            Log.d(TAG, "zakaz.size = "+ zakaz.size() + " значение "+zakaz.get(0));
+            Log.d(TAG, "telefon.size = "+ telefon.size() + " значение "+telefon.get(0));
+            Log.d(TAG, "kode.size = "+ kode.size() + " значение "+kode.get(0));
+            Log.d(TAG, "dat.size = "+ dat.size() + " значение "+dat.get(0));
+            Log.d(TAG, "tim.size = "+ tim.size() + " значение "+tim.get(0));
+            Log.d(TAG, "adres.size = "+ adres.size() + " значение "+adres.get(0));
+            Log.d(TAG, "car.size = "+ car.size() + " значение "+car.get(0));
+            Log.d(TAG, "predvar.size = "+ predvar.size() + " значение "+predvar.get(0));
+            zakaz.remove(0);
+            telefon.remove(0);
+            kode.remove(0);
+            dat.remove(0);
+            tim.remove(0);
+            adres.remove(0);
+          //  car.remove(0);
+          // predvar.remove(0);
+
+            MyVariables.indexArrList = -1;
+    }
+    }  */
+
     @SuppressLint("NewApi")
     @Override
     protected void onResume() { //запускаем таксометр и определитель координат когда активити видно
@@ -771,6 +808,20 @@ public class MainActivity extends AppCompatActivity
 
         //конец получения настроек с сервера
         FlagAppStarted = true;
+
+        //когда закрываем Activity таксометра надо быстрей обновить список заказов
+        Log.d(TAG, "******************* сработал OnResume   *****************************");
+        if (GettingZak == false) { //если в данный момент не идет получение заказа
+            new GetAsincTask().execute(httpPath);
+
+            if (ZakazEmpty == false) {
+                updateUsersList(); //обновляем ListView
+                PlyNewZak();
+            } else {
+                populateUsersList();
+            }
+            Log.d(TAG, "******************* отправили GetAsincTask   *****************************");
+        }
     }
 
     @SuppressLint("NewApi")
@@ -864,7 +915,7 @@ public class MainActivity extends AppCompatActivity
         }
         //if (StartTax==true) {  myIntent.putExtra("btnStr","Proba");  }
         //ActivityThree.buttonStart.setText("Проба");
-        Toast.makeText(getApplicationContext(), "StartTax=" +StartTax + "  " + location.getSpeed()  + "  " +  NewSpeed   + "  " +  Itogo, Toast.LENGTH_SHORT).show();
+       // Toast.makeText(getApplicationContext(), "StartTax=" +StartTax + "  " + location.getSpeed()  + "  " +  NewSpeed   + "  " +  Itogo, Toast.LENGTH_SHORT).show();
     }
 
     @SuppressLint("DefaultLocale") private String formatLat(Location location) {
@@ -1148,7 +1199,7 @@ public class MainActivity extends AppCompatActivity
          for (int i=0; i<zakaz.size(); i++) {
 
              for (int k=0; k<plyzak.size(); k++) {
-                 if (plyzak.get(k)==zakaz.get(i)) flagsred = true;
+                 if (plyzak.get(k) - zakaz.get(i)==0) flagsred = true;
                  else flagsred =false;
 
                  Log.d(TAG, "plyzak="+Integer.toString(plyzak.get(k)) +"  " + "zakaz="+Integer.toString(zakaz.get(i)) +"  flagsred=" + flagsred);
@@ -1168,5 +1219,71 @@ public class MainActivity extends AppCompatActivity
              mediaPlayer.start();
          }
      }
+
+    public class  LonLatAsincTask extends AsyncTask<String, Void, Void> {
+        String response = "";
+
+        @Override
+        protected Void doInBackground(String... params) {
+            Log.d("LonLat", "*******************    POST Lon, Lat   *****************************");
+            String url = params[0];
+            JSONObject jsonBody;
+            String requestBody;
+            HttpURLConnection urlConnection = null;
+            try {
+                jsonBody = new JSONObject();
+                jsonBody.put("lon", MyVariables.Lon);
+                jsonBody.put("lat", MyVariables.Lat);
+                requestBody = jsonBody.toString();
+                urlConnection = (HttpURLConnection) Utils.makeRequest("POST", url, null, "application/json", requestBody);
+                if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    String line;
+                    BufferedReader br=new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    while ((line=br.readLine()) != null) {
+                        response+=line;
+                    }
+                    MyVariables.InOuExcept = false;
+                    Log.d("LonLat", response);
+                    try {
+                        JSONObject jo =  new JSONObject(response);
+                        errPost= jo.getString("error");
+                        Log.d("LonLat", String.valueOf(errPost));
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    // Log.d(TAG, String.valueOf(errPost));
+                } else {
+                    // Toast.makeText(getApplicationContext(), "Ошибка ответа сервера", Toast.LENGTH_SHORT).show();
+                    Log.d("LonLat", String.valueOf(urlConnection.getResponseCode()));
+                }
+
+            } catch (JSONException | IOException e) {
+                MyVariables.InOuExcept = true;
+                e.printStackTrace();
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+
+                return null;
+            }
+        }
+        @Override
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+            //получили JSON строку с сервера
+            if  (MyVariables.InOuExcept) {
+                Toast.makeText(getApplicationContext(), "Ошибка соединения с сервером!", Toast.LENGTH_SHORT).show();} else {
+                if (errPost.contains("none")) {
+                   // Toast.makeText(getApplicationContext(), "Сервер ответил ОК", Toast.LENGTH_SHORT).show();
+                    //startActivity(new Intent(getApplicationContext(), ActivityTwo.class));
+                } else {
+                    Toast.makeText(getApplicationContext(), "Сервер ответил Ошибка", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+        }
+    }
 
 }

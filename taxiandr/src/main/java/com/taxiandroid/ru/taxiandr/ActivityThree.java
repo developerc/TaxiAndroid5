@@ -14,13 +14,17 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -42,6 +46,7 @@ public class ActivityThree extends AppCompatActivity {
     String postPath;
     String errPost = "";
     private static DatabaseHelper mDatabaseHelper;
+    String httpPath;
     // MediaPlayer mediaPlayer;
 
 
@@ -77,6 +82,7 @@ public class ActivityThree extends AppCompatActivity {
         mDatabaseHelper = new DatabaseHelper(this);
 
         postPath = MyVariables.HTTPAdress + MyVariables.SAVED_TEXT_1 + "/" + MyVariables.SAVED_TEXT_2 + "/order/";
+        httpPath = MyVariables.HTTPAdress + MyVariables.SAVED_TEXT_1 + "/" + MyVariables.SAVED_TEXT_2 + "/orders";
     }
 
     private void clickStart() {
@@ -116,7 +122,7 @@ public class ActivityThree extends AppCompatActivity {
     private void clickStop() {
         // шлем запрос на удаление заказа из таблицы заказов
         new PostAsincTask().execute(postPath + "complete");
-        mDatabaseHelper.addTaximeter(new Taximeter(MainActivity.ClkTel,MainActivity.ClkAdr, Float.toString(MainActivity.Itogo) +" руб", Float.toString(MainActivity.ItogKmGorod)+" м гор", Float.toString(MainActivity.ItogKmPrig)+" м пригор",getCurrentTimeStamp())); //добавляем запись в базу
+        mDatabaseHelper.addTaximeter(new Taximeter(MainActivity.ClkTel, MainActivity.ClkAdr, String.format("%.2f", MainActivity.Itogo) + " руб", String.format("%.1f", MainActivity.ItogKmGorod) + " м гор", String.format("%.1f", MainActivity.ItogKmPrig) + " м пригор", String.format("%.1f", MainActivity.ItogKmRn) + " м район", String.format("%.1f", MainActivity.ItogKmMg) + " м межгор", getCurrentTimeStamp())); //добавляем запись в базу
         Log.d(TAG, "*******************    Добавляем в базу    *****************************");
        // mDatabaseHelper.addTaximeter(new Taximeter("8619641256", "Адрес", "100", "2015-11-20 11:00")); //добавляем запись в базу
 
@@ -138,6 +144,7 @@ public class ActivityThree extends AppCompatActivity {
         MainActivity.ItogKmRn = 0;
         MainActivity.ItogKmMg = 0;
         MainActivity.Itogo = 0;
+
         finish();
         /*mediaPlayer = MediaPlayer.create(this, R.raw.sound_5);
         mediaPlayer.start();*/
@@ -194,7 +201,7 @@ public class ActivityThree extends AppCompatActivity {
                     tvDistance.setText("Дистанция: " + String.format("%.1f", MainActivity.ItogKmGorod + MainActivity.ItogKmPrig + MainActivity.ItogKmRn + MainActivity.ItogKmMg) + " м");
 
                     tvStay.setText("Стоянка: " + MainActivity.hms);
-                } else buttonStart.setText("Пауза");
+                } else buttonStart.setText("Пауза \n" + String.format("%.2f" + " руб", MainActivity.Itogo));
             }
 
         }
@@ -213,7 +220,7 @@ public class ActivityThree extends AppCompatActivity {
             try {
                 jsonBody = new JSONObject();
                 jsonBody.put("order_id", MainActivity.ClkZak);
-                jsonBody.put("cost", "100");
+                jsonBody.put("cost", String.format("%.2f", MainActivity.Itogo));
                 requestBody = jsonBody.toString();
                 urlConnection = (HttpURLConnection) Utils.makeRequest("POST", url, null, "application/json", requestBody);
                 if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
@@ -228,11 +235,11 @@ public class ActivityThree extends AppCompatActivity {
                         JSONObject jo = new JSONObject(response);
                         errPost = jo.getString("error");
                         Log.d(TAG, errPost);
-                        /*if (errPost.contains("none")) {
-                            Toast.makeText(getApplicationContext(), "Сервер ответил ОК", Toast.LENGTH_SHORT).show();
+                        if (errPost.contains("none")) {
+                           // Toast.makeText(getApplicationContext(), "Сервер ответил ОК", Toast.LENGTH_SHORT).show();
                         } else {
                             Toast.makeText(getApplicationContext(), "Сервер ответил Ошибка", Toast.LENGTH_SHORT).show();
-                        }*/
+                        }
 
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -256,5 +263,7 @@ public class ActivityThree extends AppCompatActivity {
             }
         }
     }
+
+
 
 }
