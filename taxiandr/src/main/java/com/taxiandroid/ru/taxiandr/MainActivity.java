@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity
     public static ArrayList<String> adres = new ArrayList<String>();
     public static ArrayList<String> car = new ArrayList<String>();
     public static ArrayList<String> predvar = new ArrayList<String>();
+    public static ArrayList<String> stay = new ArrayList<String>();
 
     HTTGATaxometr httgataxometr; //обьявили класс для настроек таксометра
     private static final String ERROR = "error";    //получаем JSON текст с параметрами error
@@ -173,6 +174,12 @@ public class MainActivity extends AppCompatActivity
         context = getApplicationContext();
         Log.d(TAG, "Запустилось! ");
        // myIntent = new Intent(getApplicationContext(), ActivityThree.class);
+        //здесь заполним ArrayList stay значениями стоянок, потом будем его заполнять значениями из JSON-а
+        stay.add("вне зоны");
+        stay.add("Черемушки");
+        stay.add("Центр");
+        stay.add("Та сторона");
+        stay.add("Парковый");
     }
 
     private void UpdateGUI() {
@@ -557,6 +564,10 @@ public class MainActivity extends AppCompatActivity
                 startActivity(new Intent(getApplicationContext(), ActivitySeven.class));
                 break;
             case 7:
+                //finish();
+                startActivity(new Intent(getApplicationContext(), ActivityEight.class));
+                break;
+            case 8:
                 finish();
                 break;
         }
