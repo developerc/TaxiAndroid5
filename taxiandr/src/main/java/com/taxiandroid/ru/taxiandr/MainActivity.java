@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity
     String httpPath;
     String postPath;
     String httpTaxometrPath;
+    String httpRegionsPath;
     final Handler myHandler = new Handler();
     // Runnable runnable;
     // HTTGATask httgatask;  //обьявили класс для метода GEt
@@ -87,6 +88,7 @@ public class MainActivity extends AppCompatActivity
     public static ArrayList<String> car = new ArrayList<String>();
     public static ArrayList<String> predvar = new ArrayList<String>();
     public static ArrayList<String> stay = new ArrayList<String>();
+    public static ArrayList<String> id_stay = new ArrayList<String>();
 
     HTTGATaxometr httgataxometr; //обьявили класс для настроек таксометра
     private static final String ERROR = "error";    //получаем JSON текст с параметрами error
@@ -169,17 +171,18 @@ public class MainActivity extends AppCompatActivity
         httpPath = MyVariables.HTTPAdress + MyVariables.SAVED_TEXT_1 + "/" + MyVariables.SAVED_TEXT_2 + "/orders";
         postPath = MyVariables.HTTPAdress + MyVariables.SAVED_TEXT_1 + "/" + MyVariables.SAVED_TEXT_2 + "/order/";
         httpTaxometrPath = MyVariables.HTTPAdress + MyVariables.SAVED_TEXT_1 + "/" + MyVariables.SAVED_TEXT_2 + "/taximeter";
+        httpRegionsPath = MyVariables.HTTPAdress + MyVariables.SAVED_TEXT_1 + "/" + MyVariables.SAVED_TEXT_2 + "/defset/regions";
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         context = getApplicationContext();
         Log.d(TAG, "Запустилось! ");
        // myIntent = new Intent(getApplicationContext(), ActivityThree.class);
         //здесь заполним ArrayList stay значениями стоянок, потом будем его заполнять значениями из JSON-а
-        stay.add("вне зоны");
+        /*stay.add("вне зоны");
         stay.add("Черемушки");
         stay.add("Центр");
         stay.add("Та сторона");
-        stay.add("Парковый");
+        stay.add("Парковый");*/
     }
 
     private void UpdateGUI() {
@@ -191,20 +194,28 @@ public class MainActivity extends AppCompatActivity
         public void run() {
            // Log.d(TAG, "Таймер работает! ");
             if (i != 1) { // если не первый раз
-                if (flagClkLV == false) { //если не кликнули на ListView
-                    double minost=i%4;
-                    if (minost==0)  //каждую минуту отсылаем координаты машины
-                       new LonLatAsincTask().execute(MyVariables.HTTPAdress+MyVariables.SAVED_TEXT_1+"/"+MyVariables.SAVED_TEXT_2+"/setcoord");
-                    else new GetAsincTask().execute(httpPath); //или получаем список заказов
-                    if (ZakazEmpty == false) {
-                        updateUsersList(); //обновляем ListView
-                        PlyNewZak();
-                    } else {
-                        populateUsersList();
+                if (i != 2) { // если не второй раз
+
+
+                    if (flagClkLV == false) { //если не кликнули на ListView
+                        double minost = i % 4;
+                        if (minost == 0)  //каждую минуту отсылаем координаты машины
+                            new LonLatAsincTask().execute(MyVariables.HTTPAdress + MyVariables.SAVED_TEXT_1 + "/" + MyVariables.SAVED_TEXT_2 + "/setcoord");
+                        else new GetAsincTask().execute(httpPath); //или получаем список заказов
+                        if (ZakazEmpty == false) {
+                            updateUsersList(); //обновляем ListView
+                            PlyNewZak();
+                        } else {
+                            populateUsersList();
+                        }
+                    } else { //отсылаем POST на взятие заказа
+                        new PostAsincTask().execute(postPath + "addcar");
                     }
-                } else { //отсылаем POST на взятие заказа
-                    new PostAsincTask().execute(postPath + "addcar");
+                } else { //первый раз получаем список стоянок
+                    new GetRegionsTask().execute(httpRegionsPath);
                 }
+
+
             } else { //первый раз получаем настройки таксометра
                 new HTTGATaxometr().execute(httpTaxometrPath);
             }
@@ -1297,4 +1308,88 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-}
+    public class GetRegionsTask extends AsyncTask<String, Void, Void> {
+        String textResult;
+
+        @Override
+        protected Void doInBackground(String... params) {
+            try {
+                Log.d(TAG, "*******************    Open Connection GetRegionsTask   *****************************");
+                URL url = new URL(params[0]);
+                Log.d(TAG, "Received URL:  " + url);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(10000 /* milliseconds */);
+                conn.setConnectTimeout(15000 /* milliseconds */);
+                conn.setRequestMethod("GET");
+                conn.setDoInput(true);
+                conn.connect();
+                int response = conn.getResponseCode();
+                // Log.d(TAG, "The response is: " + response);
+                InputStream in = conn.getInputStream();
+                // Log.d(TAG, "GetInputStream:  " + in);
+
+                // Log.d(TAG, "*******************    String Builder     *****************************");
+                String line = null;
+
+                BufferedReader bufferReader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+                String StringBuffer;
+                String stringText = "";
+                while ((StringBuffer = bufferReader.readLine()) != null) {
+                    stringText += StringBuffer;
+                }
+                MyVariables.InOuExcept = false;
+                bufferReader.close();
+
+                textResult = stringText;
+
+            } catch (MalformedURLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                textResult = e.toString();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                MyVariables.InOuExcept = true;
+                e.printStackTrace();
+                textResult = e.toString();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            //получили JSON строку с сервера
+             Log.d(TAG, textResult);
+            if (MyVariables.InOuExcept) {
+                Toast.makeText(getApplicationContext(), "Ошибка соединения с сервером!", Toast.LENGTH_SHORT).show();
+            } else {
+                try {
+                    RegionsJson(textResult);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    } // закончился GetRegionsTask
+    //обработка JSON строки
+    public void RegionsJson(String jsonString) throws JSONException {
+        if (jsonString.contains("error")) {
+            Log.d(TAG, "Ошибка получения стоянок");
+        } else {
+            JSONArray jsonMainArr = new JSONArray(jsonString);
+            stay.clear();
+            id_stay.clear();
+            for (int i = 0; i < jsonMainArr.length(); i++) {
+                JSONObject json_data = jsonMainArr.getJSONObject(i);
+                id_stay.add(json_data.getString("id"));
+                stay.add(json_data.getString("name"));
+            }
+            for (int i = 0; i < stay.size(); i++) {
+
+                Log.d(TAG, "id_stay=" + id_stay.get(i) + "  stay:" + stay.get(i) );
+            }
+        }
+    }
+
+
+    }
