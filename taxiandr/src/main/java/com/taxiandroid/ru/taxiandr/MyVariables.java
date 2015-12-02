@@ -10,9 +10,9 @@ public class MyVariables {
     public static boolean BRIGTNESSHIGH=true;
     public static String SAVED_TEXT_4=""; //адрес заказа
 
-   // public static String HTTPAdress = "http://pchelka.teleknot.ru/api/"; //Адрес отправки НТТР запросов "http://pchelka.teleknot.ru/api/" или "http://192.168.28.19/api/"
+    public static String HTTPAdress = "http://pchelka.teleknot.ru/api/"; //Адрес отправки НТТР запросов "http://pchelka.teleknot.ru/api/" или "http://192.168.28.19/api/"
 
-    public static String HTTPAdress = "http://192.168.28.19:3000/api/"; //Адрес отправки НТТР запросов
+   // public static String HTTPAdress = "http://192.168.28.19:3000/api/"; //Адрес отправки НТТР запросов
 
     public static float cost_km_city = 0; //стоимость руб/км город
     public static float cost_km_suburb =0; //стоимость руб/км пригород
@@ -27,6 +27,6 @@ public class MyVariables {
     public static String Lon=""; //долгота
     public static boolean InOuExcept = false;
     public static float Itogo=0;
-   // public static int indexArrList = -1;
+    //public static boolean HandStay=false;
 
 }

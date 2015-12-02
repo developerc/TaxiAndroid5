@@ -33,6 +33,7 @@ public class FourActivity extends AppCompatActivity {
 
     final String SAVED_TEXT_LGN = "saved_text_lgn";
     final String SAVED_TEXT_PSW = "saved_text_psw";
+    final String HAND_STAY = "hand_stay";
 
 
     @Override
@@ -66,19 +67,31 @@ public class FourActivity extends AppCompatActivity {
         MyVariables.SAVED_TEXT_2 = sPref.getString(SAVED_TEXT_PSW, "");
 
         cb=(CheckBox) findViewById(R.id.checkBox1);
+        sPref = this.getSharedPreferences("pref",0);
+        cb.setChecked(sPref.getBoolean(HAND_STAY, false));
         cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (buttonView.isChecked()) {
                     Toast.makeText(getApplicationContext(), "Вы выбрали ручную постановку" , Toast.LENGTH_SHORT).show();
                     new PostAsincTask().execute(postPath,"1");
+                    setHandStay(true);
                 } else {
                     Toast.makeText(getApplicationContext(), "Вы выбрали автоматическую постановку" , Toast.LENGTH_SHORT).show();
                     new PostAsincTask().execute(postPath, "0");
+                    setHandStay(false);
                 }
             }
             });
     }
+
+    private void setHandStay(boolean handStay){
+        sPref = this.getSharedPreferences("pref", 0);
+        SharedPreferences.Editor ed = sPref.edit();
+        ed.putBoolean(HAND_STAY, handStay);
+        ed.commit();
+    }
+
 
     private void saveText() {
         sPref = this.getSharedPreferences("pref", 0);
