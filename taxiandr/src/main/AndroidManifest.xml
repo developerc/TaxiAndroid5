@@ -55,6 +55,10 @@
             android:name=".ActivitySeven"
             android:label="@string/title_activity_activity_seven" >
         </activity>
+        <activity
+            android:name=".ActivityEight"
+            android:label="@string/title_activity_activity_eight" >
+        </activity>
     </application>
 
 </manifest>

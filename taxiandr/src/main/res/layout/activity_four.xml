@@ -153,6 +153,24 @@
                 </LinearLayout>
 
         </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        >
+        <CheckBox
+            android:id="@+id/checkBox1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/queue_by_hand"
+            android:textColor="@drawable/white_color"
+            android:button="@drawable/custom_checkbox"
+
+            />
+
+        </LinearLayout>
     </LinearLayout>
 
 </RelativeLayout>
