@@ -1,5 +1,6 @@
 package com.taxiandroid.ru.taxiandr;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,9 +16,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 public class ActivityEight extends AppCompatActivity {
@@ -77,7 +85,8 @@ public class ActivityEight extends AppCompatActivity {
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             ClkStay = MainActivity.stay.get(position);
             Toast.makeText(getApplicationContext(), "Вы выбрали " + ClkStay, Toast.LENGTH_SHORT).show();
-            new PostAsincTask().execute(postPath, "_method","delete");
+            new PostAsincTask().execute(postPath, "_method=", "delete");
+            if (MyVariables.InOuExcept == false) new PostAsincTask().execute(postPath, "region_id=", MainActivity.id_stay.get(position));
         }
     };
 
@@ -88,50 +97,47 @@ public class ActivityEight extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
             Log.d(TAG, params[0]);
-            String url = params[0];
-            JSONObject jsonBody;
-            String requestBody;
-            HttpURLConnection urlConnection = null;
+            String message = null;
             try {
-                jsonBody = new JSONObject();
-                jsonBody.put(params[1], params[2]);
-                requestBody = jsonBody.toString();
-                // requestBody = Utils.buildPostParameters(jsonBody);
-                urlConnection = (HttpURLConnection) Utils.makeRequest("POST", url, null, "application/json", requestBody);
-                if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                message = URLEncoder.encode(params[2], "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                URL url = new URL(params[0]);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setDoOutput(true);
+                connection.setRequestMethod("POST");
+
+                OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+                writer.write(params[1] + message);
+                writer.close();
+
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     String line;
-                    BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                     while ((line = br.readLine()) != null) {
                         response += line;
                     }
                     MyVariables.InOuExcept = false;
-                    // Log.d(TAG, response);
+                     // Log.d(TAG, response);
                     try {
                         JSONObject jo = new JSONObject(response);
                         errPost = jo.getString("error");
-                        /*if (errPost.contains("none")) {
-                            Toast.makeText(getApplicationContext(), "Сервер ответил ОК", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(getApplicationContext(), "Сервер ответил Ошибка", Toast.LENGTH_SHORT).show();
-                        }*/
+
 
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    // Log.d(TAG, String.valueOf(errPost));
                 } else {
-                    // Toast.makeText(getApplicationContext(), "Ошибка ответа сервера", Toast.LENGTH_SHORT).show();
-                    Log.d(TAG, String.valueOf(urlConnection.getResponseCode()));
+                    MyVariables.InOuExcept = true;
+                    Log.d(TAG,"Error code: " + String.valueOf(connection.getResponseCode()));
                 }
-                //...
-                // return response;
-            } catch (JSONException | IOException e) {
+            } catch (MalformedURLException e) {
+                // ...
+            } catch (IOException e) {
                 MyVariables.InOuExcept = true;
-                e.printStackTrace();
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
             }
 
             return response;
