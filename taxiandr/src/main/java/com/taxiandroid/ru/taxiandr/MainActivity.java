@@ -43,9 +43,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -60,6 +63,7 @@ public class MainActivity extends AppCompatActivity
     CustomOrdersAdapter adapter;
     String httpPath;
     String postPath;
+    String postQueuePath;
     String httpTaxometrPath;
     String httpRegionsPath;
     final Handler myHandler = new Handler();
@@ -172,6 +176,7 @@ public class MainActivity extends AppCompatActivity
         postPath = MyVariables.HTTPAdress + MyVariables.SAVED_TEXT_1 + "/" + MyVariables.SAVED_TEXT_2 + "/order/";
         httpTaxometrPath = MyVariables.HTTPAdress + MyVariables.SAVED_TEXT_1 + "/" + MyVariables.SAVED_TEXT_2 + "/taximeter";
         httpRegionsPath = MyVariables.HTTPAdress + MyVariables.SAVED_TEXT_1 + "/" + MyVariables.SAVED_TEXT_2 + "/defset/regions";
+        postQueuePath = MyVariables.HTTPAdress + MyVariables.SAVED_TEXT_1 + "/" + MyVariables.SAVED_TEXT_2 + "/queue";
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         context = getApplicationContext();
@@ -579,7 +584,8 @@ public class MainActivity extends AppCompatActivity
                 startActivity(new Intent(getApplicationContext(), ActivityEight.class));
                 break;
             case 8:
-                finish();
+                new PostDelQTask().execute(postQueuePath, "_method=", "delete");
+               // finish();
                 break;
         }
     }
@@ -1391,5 +1397,74 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public class PostDelQTask extends AsyncTask<String, String,String> {
+        String response = "";
+        String errPost = "";
+
+        @Override
+        protected String doInBackground(String... params) {
+            Log.d(TAG, params[0]);
+            String message = null;
+            try {
+                message = URLEncoder.encode(params[2], "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                URL url = new URL(params[0]);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setDoOutput(true);
+                connection.setRequestMethod("POST");
+
+                OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+                writer.write(params[1] + message);
+                writer.close();
+
+                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    String line;
+                    BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    while ((line = br.readLine()) != null) {
+                        response += line;
+                    }
+                    MyVariables.InOuExcept = false;
+                    // Log.d(TAG, response);
+                    try {
+                        JSONObject jo = new JSONObject(response);
+                        errPost = jo.getString("error");
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    MyVariables.InOuExcept = true;
+                    Log.d(TAG,"Error code: " + String.valueOf(connection.getResponseCode()));
+                }
+            } catch (MalformedURLException e) {
+                // ...
+            } catch (IOException e) {
+                MyVariables.InOuExcept = true;
+            }
+
+            return response;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            //получили JSON строку с сервера
+            Log.d(TAG, response);
+            if (MyVariables.InOuExcept) {
+                Toast.makeText(getApplicationContext(), "Ошибка соединения с сервером!", Toast.LENGTH_SHORT).show();
+            } else {
+                if (errPost.contains("none")) {
+                    Toast.makeText(getApplicationContext(), "Сервер ответил ОК", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Сервер ответил Ошибка", Toast.LENGTH_SHORT).show();
+                }
+            }
+            finish();
+        }
+    }
 
     }
