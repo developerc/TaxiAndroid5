@@ -294,7 +294,7 @@ public class MainActivity extends AppCompatActivity
             //получили JSON строку с сервера
             // Log.d(TAG, textResult);
             //обрабатываем JSON строку
-            boolean flagGetZakaz = false;
+           // boolean flagGetZakaz = false;
             flagClkLV = false;
             super.onPostExecute(result);
             if (MyVariables.InOuExcept) {
