@@ -301,6 +301,7 @@ public class MainActivity extends AppCompatActivity
                 Toast.makeText(getApplicationContext(), "Ошибка соединения с сервером!", Toast.LENGTH_SHORT).show();
             } else {
                 if (errPost.contains("none")) {
+
                     //Toast.makeText(getApplicationContext(), "Сервер ответил ОК", Toast.LENGTH_SHORT).show();
                     //если без ошибок отправили POST то шлем GET для получения списка заказов и если если там есть этот заказ, то стартуем ActivityTwo
                 /*    Log.d(TAG, "******************* отправляем GetAsincTask из POST   *****************************");
@@ -320,6 +321,8 @@ public class MainActivity extends AppCompatActivity
                 } else {
                     Toast.makeText(getApplicationContext(), resPost, Toast.LENGTH_SHORT).show();
                 }
+                Log.d(TAG,"errPost = " + errPost);
+                Log.d(TAG,"resPost = " + resPost);
             }
 
         }
