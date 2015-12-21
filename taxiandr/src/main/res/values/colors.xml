@@ -4,4 +4,5 @@
     <drawable name="white_color">#FFFFFF</drawable>
     <drawable name="gray_blue_color">#2A71B0</drawable>
     <drawable name="dark_blue_color">#246096</drawable>
+    <drawable name="red_color">#D11141</drawable>
 </resources>

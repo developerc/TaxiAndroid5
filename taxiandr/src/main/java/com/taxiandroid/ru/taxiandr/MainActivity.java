@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity
     final String SAVED_TEXT_PSW = "saved_text_psw";
     public static boolean flagClkLV = false;
     static String errPost = "";
+    static String resPost = "";
     public static int ClkZak;
     public static String ClkAdr = "";
     public static String ClkTel = "";
@@ -131,6 +132,7 @@ public class MainActivity extends AppCompatActivity
     boolean flagMusYes = false;
     static boolean GettingZak = false;
 
+
    // Intent myIntent;
 
     /**
@@ -166,7 +168,7 @@ public class MainActivity extends AppCompatActivity
             public void run() {
                 UpdateGUI();
             }
-        }, 0, 15000);
+        }, 0, 10000);
 
         sPref = this.getSharedPreferences("pref", 0);
         MyVariables.SAVED_TEXT_1 = sPref.getString(SAVED_TEXT_LGN, "");
@@ -257,6 +259,7 @@ public class MainActivity extends AppCompatActivity
                     try {
                         JSONObject jo = new JSONObject(response);
                         errPost = jo.getString("error");
+                        resPost = jo.getString("result");
                         /*if (errPost.contains("none")) {
                             Toast.makeText(getApplicationContext(), "Сервер ответил ОК", Toast.LENGTH_SHORT).show();
                         } else {
@@ -291,18 +294,35 @@ public class MainActivity extends AppCompatActivity
             //получили JSON строку с сервера
             // Log.d(TAG, textResult);
             //обрабатываем JSON строку
-
+           // boolean flagGetZakaz = false;
             flagClkLV = false;
             super.onPostExecute(result);
             if (MyVariables.InOuExcept) {
                 Toast.makeText(getApplicationContext(), "Ошибка соединения с сервером!", Toast.LENGTH_SHORT).show();
             } else {
                 if (errPost.contains("none")) {
+
                     //Toast.makeText(getApplicationContext(), "Сервер ответил ОК", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(getApplicationContext(), ActivityTwo.class));
+                    //если без ошибок отправили POST то шлем GET для получения списка заказов и если если там есть этот заказ, то стартуем ActivityTwo
+                /*    Log.d(TAG, "******************* отправляем GetAsincTask из POST   *****************************");
+                    if (GettingZak == false) { //если в данный момент не идет получение заказа
+                        new GetAsincTask().execute(httpPath);
+                        for (int i = 0; i < zakaz.size(); i++) {
+                            if (zakaz.get(i).equals(ClkZak)) {
+                                flagGetZakaz = true;
+                                Log.d(TAG, "Кликнутый заказ равен" + zakaz.get(i) );
+                            } else {
+                                Log.d(TAG, "Кликнутый заказ не равен" + zakaz.get(i) );
+                            }
+                        }
+                    }
+                    if (flagGetZakaz) startActivity(new Intent(getApplicationContext(), ActivityTwo.class));*/
+                     startActivity(new Intent(getApplicationContext(), ActivityTwo.class));
                 } else {
-                    Toast.makeText(getApplicationContext(), "Сервер ответил Ошибка", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), resPost, Toast.LENGTH_SHORT).show();
                 }
+                Log.d(TAG,"errPost = " + errPost);
+                Log.d(TAG,"resPost = " + resPost);
             }
 
         }
@@ -513,7 +533,7 @@ public class MainActivity extends AppCompatActivity
             ClkTel = telefon.get(position);
             ClkPre = predvar.get(position);
             Toast.makeText(getApplicationContext(),
-                    "Вы выбрали " + ClkAdr + " \n заказ " + ClkZak, Toast.LENGTH_SHORT).show();
+                    "Вы выбрали " + ClkAdr , Toast.LENGTH_SHORT).show();
             if (flagClkLV == false) {
                 flagClkLV = true;
             } else flagClkLV = false;
@@ -1467,4 +1487,4 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    }
+}

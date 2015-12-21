@@ -1,6 +1,7 @@
 package com.taxiandroid.ru.taxiandr;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -22,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ActivityTwo extends AppCompatActivity {
     ArrayList<Two> arrayTwo;
@@ -29,9 +32,12 @@ public class ActivityTwo extends AppCompatActivity {
     CustomTwoAdapter adapter;
     TextView tvAdres;
     String postPath;
-    private static final String TAG = "myLogs2";
+    private static final String TAG = "myLogs";
     String errPost="";
     String httpSMS2;
+    int currZak;
+    String currAdr;
+   // MediaPlayer mediaPlayer;
 
 
     @Override
@@ -43,6 +49,17 @@ public class ActivityTwo extends AppCompatActivity {
         tvAdres.setText(MainActivity.ClkAdr);
         populateTwoList();
         lvTwo.setOnItemClickListener(itemClickListener);
+        currZak = MainActivity.ClkZak;
+        currAdr = MainActivity.ClkAdr;
+
+        Timer myTimer = new Timer();
+        myTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+               // CheckOrder();
+                new ChZakAsincTask().execute();
+            }
+        }, 0, 10000);
 
         postPath = MyVariables.HTTPAdress+MyVariables.SAVED_TEXT_1+"/"+MyVariables.SAVED_TEXT_2+"/order/";
         httpSMS2 = MyVariables.HTTPAdress+MyVariables.SAVED_TEXT_1+"/"+MyVariables.SAVED_TEXT_2+"/smsdriverarrived";
@@ -171,14 +188,6 @@ public class ActivityTwo extends AppCompatActivity {
         }
     };
 
-    public  class PostSMSAsincTask extends AsyncTask<String, Void, Void> {
-
-        @Override
-        protected Void doInBackground(String... params) {
-
-            return null;
-        }
-    }
 
         private void populateTwoList() {
         arrayTwo = Two.getTwoItem();
@@ -207,5 +216,51 @@ public class ActivityTwo extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void CheckOrder(){
+    /*    boolean flagGetZakaz = false;
+
+        for (int i = 0; i < MainActivity.zakaz.size(); i++) {
+            if (MainActivity.zakaz.get(i).equals(currZak)) {
+                flagGetZakaz = true;
+                Log.d(TAG, "Кликнутый заказ равен" + MainActivity.zakaz.get(i) );
+            } else {
+                Log.d(TAG, "Кликнутый заказ не равен" + MainActivity.zakaz.get(i) );
+            }
+        }
+        if (!flagGetZakaz) {
+           // tvAdres.setTextColor(0xFFD11141);
+        }*/
+    }
+
+    public class  ChZakAsincTask extends AsyncTask<String, Void, Void> {
+        boolean flagGetZakaz = false;
+
+        @Override
+        protected Void doInBackground(String... params) {
+            for (int i = 0; i < MainActivity.zakaz.size(); i++) {
+                if (MainActivity.zakaz.get(i).equals(currZak)) {
+                    flagGetZakaz = true;
+                    Log.d(TAG, "Кликнутый заказ равен" + MainActivity.zakaz.get(i) );
+                } else {
+                    Log.d(TAG, "Кликнутый заказ не равен" + MainActivity.zakaz.get(i) );
+                }
+            }
+            return null;
+        }
+
+        protected void onPostExecute(Void result) {
+            super.onPostExecute(result);
+
+            if (!flagGetZakaz) {
+                tvAdres.setText("Заказ ОТМЕНЕН " + currAdr);
+                 tvAdres.setTextColor(0xFFD11141);
+                /*mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.sound_2);
+                mediaPlayer.start();*/
+            }
+
+        }
+
     }
 }

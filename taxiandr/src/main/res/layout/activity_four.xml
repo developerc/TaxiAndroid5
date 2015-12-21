@@ -138,7 +138,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-
+                android:paddingRight="10dp"
                 >
             <Button
                 android:layout_width="wrap_content"
@@ -147,10 +147,29 @@
                 android:id="@+id/btnLoad"
                 android:background="@drawable/my_btn_start"
                 android:textColor="@drawable/white_color"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
+
                 >
             </Button>
                 </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/linearLayout7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+
+                >
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/update_app"
+                    android:id="@+id/btnUpdate"
+                    android:background="@drawable/my_btn_start"
+                    android:textColor="@drawable/white_color"
+                    android:paddingLeft="@dimen/activity_horizontal_margin"
+                    >
+                </Button>
+            </LinearLayout>
 
         </LinearLayout>
 

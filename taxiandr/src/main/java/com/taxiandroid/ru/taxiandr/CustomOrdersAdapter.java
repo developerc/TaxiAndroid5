@@ -8,7 +8,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by saperov on 28.10.15.
@@ -20,6 +23,7 @@ public class CustomOrdersAdapter extends ArrayAdapter<Orders> {
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
+
         // Get the data item for this position
     Orders order = getItem(position);
         // Check if an existing view is being reused, otherwise inflate the view
@@ -43,7 +47,15 @@ public class CustomOrdersAdapter extends ArrayAdapter<Orders> {
             if (MainActivity.predvar.get(position).toString().equals("null")) {
                 tvSroch.setText("Срочный");
             } else {
-                tvSroch.setText("Предварительный " + MainActivity.dat.get(position).toString() + " " + MainActivity.tim.toString().substring(12,17));
+              /*  Date formDate = null;
+                try {
+                    formDate = format.parse(MainActivity.dat.get(position));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }*/
+                String myDate = MainActivity.dat.get(position).toString().substring(8, 10) + "." + MainActivity.dat.get(position).toString().substring(5, 7);
+                tvSroch.setText("Предв. " + myDate + " " + MainActivity.tim.toString().substring(12,17));
+                tvSroch.setTextColor(0xFF00FF00);
             }
 
             if (MainActivity.car.get(position).toString().contains("null")) {
