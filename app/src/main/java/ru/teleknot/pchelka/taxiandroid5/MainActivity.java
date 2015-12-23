@@ -1,6 +1,7 @@
 package ru.teleknot.pchelka.taxiandroid5;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -84,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             // TODO Auto-generated method stub
-            String urlImage = "http://developer.alexanderklimov.ru/android/images/webview3.png";
+            String urlImage = "http://pchelka.teleknot.ru/TD25.apk";
             // new GetImageTask().execute(urlImage);
             //находим директорию для хранения загружаемых файлов
             //dlDir = Environment.getExternalStorageDirectory();
@@ -123,10 +124,10 @@ public class MainActivity extends AppCompatActivity {
 
         protected String doInBackground(String... urls) {
 
-            String filename = "android_cat.png";
-            File myFile = new File(directory, filename);
-            File myFile2 = new File(directory, "new.png");
-           //  File myFile = new File(dlDir, filename);
+            String filename = "TD25.apk";
+           // File myFile = new File(directory, filename);
+           // File myFile2 = new File(dlDir, "new.png");
+             File myFile = new File(dlDir, filename);
 
             try {
                 URL url = new URL(urls[0]);
@@ -154,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            try {
+        /*    try {
                 InputStream is2 = new BufferedInputStream(new FileInputStream(myFile));
                 OutputStream os2 = new FileOutputStream(myFile2);
 
@@ -174,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
-            }
+            } */
             return filename;
         }
 
@@ -192,13 +193,17 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(String filename) {
             progressDownload.setProgress(100);
             tvInfo.setText("Загрузка завершена...");
-            File myFile = new File(directory, filename);
-            //File myFile = new File(dlDir, filename);
+
+            Intent i = new Intent();
+            i.setAction(Intent.ACTION_VIEW);
+
+            //File myFile = new File(directory, filename);
+          /*  File myFile = new File(dlDir, filename);
             ivInet.setImageBitmap(BitmapFactory.decodeFile(myFile
-                    .getAbsolutePath()));
-          directory = new File(directory.toString() + "/android_cat.png");
+                    .getAbsolutePath()));*/
+       /*   directory = new File(directory.toString() + "/android_cat.png");
             dlDir = new File(dlDir.toString() + "/android_cat.png");
-            copyFile(directory, dlDir);
+            copyFile(directory, dlDir); */
         }
     }
     public  boolean copyFile(File source, File dest) {
