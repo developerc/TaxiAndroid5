@@ -3,6 +3,7 @@ package ru.teleknot.pchelka.taxiandroid5;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
@@ -194,8 +195,14 @@ public class MainActivity extends AppCompatActivity {
             progressDownload.setProgress(100);
             tvInfo.setText("Загрузка завершена...");
 
-            Intent i = new Intent();
-            i.setAction(Intent.ACTION_VIEW);
+            dlDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+
+            File file = new File(dlDir, filename);
+            Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+            intent.setData(Uri.fromFile(file));
+            startActivity(intent);
+           // Intent i = new Intent();
+           // i.setAction(Intent.ACTION_VIEW);
 
             //File myFile = new File(directory, filename);
           /*  File myFile = new File(dlDir, filename);
