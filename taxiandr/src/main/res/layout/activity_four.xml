@@ -173,6 +173,20 @@
 
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/tvInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp" />
+
+        <ProgressBar
+            android:id="@+id/progressDownload"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp" >
+        </ProgressBar>
+
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="fill_parent"

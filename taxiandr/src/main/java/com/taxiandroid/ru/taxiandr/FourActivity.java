@@ -1,7 +1,10 @@
 package com.taxiandroid.ru.taxiandr;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,23 +15,35 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 
 public class FourActivity extends AppCompatActivity {
-    Button btnSave, btnLoad;
+    Button btnSave, btnLoad, btnUpdate;
     EditText etLgn, etPsw, etSrv;
     SharedPreferences sPref;
     CheckBox cb;
     String postPath;
     private static final String TAG = "myLogs";
+    private TextView tvInfo;
+    private ProgressBar progressDownload;
+    private File dlDir;
 
 
     final String SAVED_TEXT_LGN = "saved_text_lgn";
@@ -42,6 +57,8 @@ public class FourActivity extends AppCompatActivity {
         setContentView(R.layout.activity_four);
 
         postPath = MyVariables.HTTPAdress + MyVariables.SAVED_TEXT_1 + "/" + MyVariables.SAVED_TEXT_2 + "/mpinq";
+        tvInfo = (TextView) findViewById(R.id.tvInfo);
+        progressDownload = (ProgressBar) findViewById(R.id.progressDownload);
 
         etLgn = (EditText) this.findViewById(R.id.etLgn);
         etPsw = (EditText) this.findViewById(R.id.etPsw);
@@ -59,6 +76,13 @@ public class FourActivity extends AppCompatActivity {
         btnLoad.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 loadText();
+            }
+        });
+
+        btnUpdate =(Button) this.findViewById(R.id.btnUpdate);
+        btnUpdate.setOnClickListener(new View.OnClickListener(){
+            public void onClick(View v) {
+                updateProg();
             }
         });
 
@@ -213,5 +237,77 @@ public class FourActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    public void updateProg() {
+        String urlImage = "http://pchelka.teleknot.ru/TD25.apk";
+        dlDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        Toast toast = Toast.makeText(getBaseContext(),
+                "Загружаем в директорию: " + dlDir.toString(), Toast.LENGTH_LONG);
+        toast.show();
+        new GetProgTask().execute(urlImage);
+    }
+
+    private class GetProgTask extends AsyncTask<String, Integer, String> {
+        protected void onPreExecute() {
+            progressDownload.setProgress(0);
+        }
+
+        @Override
+        protected String doInBackground(String... urls) {
+
+            String filename = "TD25.apk";
+            File myFile = new File(dlDir, filename);
+
+            try {
+                URL url = new URL(urls[0]);
+                URLConnection connection = url.openConnection();
+                connection.connect();
+                int fileSize = connection.getContentLength();
+
+                InputStream is = new BufferedInputStream(url.openStream());
+                OutputStream os = new FileOutputStream(myFile);
+
+                byte data[] = new byte[1024];
+                long total = 0;
+                int count;
+                while ((count = is.read(data)) != -1) {
+                    total += count;
+                    publishProgress((int) (total * 100 / fileSize));
+                    os.write(data, 0, count);
+                }
+
+                os.flush();
+                os.close();
+                is.close();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return filename;
+        }
+        protected void onProgressUpdate(Integer... progress) {
+            tvInfo.setText(String.valueOf(progress[0]) + "%");
+            progressDownload.setProgress(progress[0]);
+        }
+
+        protected void onCancelled() {
+            Toast toast = Toast.makeText(getBaseContext(),
+                    "Error connecting to Server", Toast.LENGTH_LONG);
+            toast.show();
+        }
+        protected void onPostExecute(String filename) {
+            progressDownload.setProgress(100);
+            tvInfo.setText("Загрузка завершена...");
+
+            dlDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            //начинаем установку приложения
+            File file = new File(dlDir, filename);
+            Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+            intent.setData(Uri.fromFile(file));
+            startActivity(intent);
+            }
+
     }
 }
