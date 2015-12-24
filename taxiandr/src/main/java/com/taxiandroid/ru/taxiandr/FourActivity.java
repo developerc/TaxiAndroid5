@@ -301,12 +301,12 @@ public class FourActivity extends AppCompatActivity {
             progressDownload.setProgress(100);
             tvInfo.setText("Загрузка завершена...");
 
-            dlDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+           /* dlDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             //начинаем установку приложения
             File file = new File(dlDir, filename);
             Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
             intent.setData(Uri.fromFile(file));
-            startActivity(intent);
+            startActivity(intent);*/
             }
 
     }

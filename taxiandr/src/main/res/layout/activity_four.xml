@@ -12,6 +12,87 @@
         android:paddingLeft="@dimen/activity_horizontal_margin"
         >
 
+        <TableLayout
+            android:stretchColumns="1"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+
+            >
+        <TableRow android:padding="5dp">
+            <TextView
+                android:id="@+id/tvSrv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/text_server"
+                android:textColor="@drawable/white_color"
+                >
+            </TextView>
+
+            <EditText
+                android:id="@+id/etSrv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:background="@drawable/dark_blue_color"
+                android:textColor="@drawable/white_color"
+
+                >
+                <requestFocus>
+                </requestFocus>
+            </EditText>
+
+        </TableRow>
+            <TableRow android:padding="5dp">
+                <TextView
+                    android:id="@+id/tvLgn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/login"
+                    android:textColor="@drawable/white_color"
+                    >
+                </TextView>
+
+                <EditText
+                    android:id="@+id/etLgn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:background="@drawable/dark_blue_color"
+                    android:textColor="@drawable/white_color"
+
+                    >
+
+                    <requestFocus>
+                    </requestFocus>
+                </EditText>
+            </TableRow>
+            <TableRow android:padding="5dp">
+                <TextView
+                    android:id="@+id/tvPsw"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/password"
+                    android:textColor="@drawable/white_color"
+                    >
+                </TextView>
+
+                <EditText
+                    android:id="@+id/etPsw"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:background="@drawable/dark_blue_color"
+                    android:textColor="@drawable/white_color"
+
+                    >
+
+                    <requestFocus>
+                    </requestFocus>
+                </EditText>
+            </TableRow>
+        </TableLayout>
+
+        <!--
     <LinearLayout
         android:id="@+id/linearLayout6"
         android:layout_width="match_parent"
@@ -41,7 +122,8 @@
         </EditText>
 
         </LinearLayout>
-
+        -->
+<!--
         <LinearLayout
             android:id="@+id/linearLayout1"
             android:layout_width="match_parent"
@@ -73,7 +155,8 @@
                 </requestFocus>
             </EditText>
         </LinearLayout>
-
+-->
+        <!--
         <LinearLayout
             android:id="@+id/linearLayout2"
             android:layout_width="match_parent"
@@ -106,6 +189,7 @@
             </EditText>
 
         </LinearLayout>
+        -->
 
         <LinearLayout
             android:id="@+id/linearLayout3"

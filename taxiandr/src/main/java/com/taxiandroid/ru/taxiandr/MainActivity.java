@@ -131,6 +131,7 @@ public class MainActivity extends AppCompatActivity
     MediaPlayer mediaPlayer;
     boolean flagMusYes = false;
     static boolean GettingZak = false;
+    Timer myTimer;
 
 
    // Intent myIntent;
@@ -162,7 +163,7 @@ public class MainActivity extends AppCompatActivity
         populateUsersList();
         lvOrders.setOnItemClickListener(itemClickListener);
 
-        Timer myTimer = new Timer();
+        myTimer = new Timer();
         myTimer.schedule(new TimerTask() {
             @Override
             public void run() {
@@ -1483,6 +1484,7 @@ public class MainActivity extends AppCompatActivity
                     Toast.makeText(getApplicationContext(), "Сервер ответил Ошибка", Toast.LENGTH_SHORT).show();
                 }
             }
+            myTimer.cancel();
             finish();
         }
     }
