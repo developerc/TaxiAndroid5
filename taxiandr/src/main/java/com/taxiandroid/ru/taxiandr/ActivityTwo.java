@@ -20,8 +20,11 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -32,11 +35,14 @@ public class ActivityTwo extends AppCompatActivity {
     CustomTwoAdapter adapter;
     TextView tvAdres;
     String postPath;
+    String httpPath;
     private static final String TAG = "myLogs";
     String errPost="";
     String httpSMS2;
     int currZak;
     String currAdr;
+    String ERROR = "error";
+    String RESULT = "result";
    // MediaPlayer mediaPlayer;
 
 
@@ -63,6 +69,7 @@ public class ActivityTwo extends AppCompatActivity {
 
         postPath = MyVariables.HTTPAdress+MyVariables.SAVED_TEXT_1+"/"+MyVariables.SAVED_TEXT_2+"/order/";
         httpSMS2 = MyVariables.HTTPAdress+MyVariables.SAVED_TEXT_1+"/"+MyVariables.SAVED_TEXT_2+"/smsdriverarrived";
+        httpPath = MyVariables.HTTPAdress + MyVariables.SAVED_TEXT_1 + "/" + MyVariables.SAVED_TEXT_2 + "/routetoclient";
     }
 
     public class  TwoPostAsincTask extends AsyncTask<String, String, Void> {
@@ -181,6 +188,12 @@ public class ActivityTwo extends AppCompatActivity {
                     new TwoPostAsincTask().execute(postPath + "delcar","order_id");
                     finish();
                 }
+                break;
+                case 4: {
+                    itemAct="Вы выбрали Построить маршрут";
+                    //new TwoPostAsincTask().execute(postPath + "delcar","order_id");
+                    new GetRouteTask().execute(httpPath);
+                }
             }
 
             Toast.makeText(getApplicationContext(),
@@ -262,5 +275,95 @@ public class ActivityTwo extends AppCompatActivity {
 
         }
 
+    }
+
+    public class GetRouteTask extends AsyncTask<String, Void, Void> {
+        String textResult;
+
+        @Override
+        protected Void doInBackground(String... params) {
+            try {
+                Log.d(TAG, "*******************    Open Connection    *****************************");
+                URL url = new URL(params[0]);
+                Log.d(TAG, "Received URL:  " + url);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(30000 /* milliseconds */);
+                conn.setConnectTimeout(30000 /* milliseconds */);
+                conn.setRequestMethod("GET");
+                conn.setDoInput(true);
+                conn.connect();
+                int response = conn.getResponseCode();
+                // Log.d(TAG, "The response is: " + response);
+                InputStream in = conn.getInputStream();
+                // Log.d(TAG, "GetInputStream:  " + in);
+
+                // Log.d(TAG, "*******************    String Builder     *****************************");
+               // String line = null;
+
+                BufferedReader bufferReader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+                String StringBuffer;
+                String stringText = "";
+                while ((StringBuffer = bufferReader.readLine()) != null) {
+                    stringText += StringBuffer;
+                }
+                MyVariables.InOuExcept = false;
+                bufferReader.close();
+
+                textResult = stringText;
+
+            } catch (MalformedURLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                textResult = e.toString();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                MyVariables.InOuExcept = true;
+                e.printStackTrace();
+                textResult = e.toString();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            //получили JSON строку с сервера
+            // Log.d(TAG, textResult);
+            //обрабатываем JSON строку
+            if (MyVariables.InOuExcept) {
+                Toast.makeText(getApplicationContext(), "Ошибка соединения с сервером!", Toast.LENGTH_SHORT).show();
+            } else {
+                HandlingJson(textResult);
+            }
+
+            super.onPostExecute(result);
+        }
+    }
+
+    public void HandlingJson(String jsonString) {
+        // ArrayList<GeoPoint> wp2 = new ArrayList<GeoPoint>();
+        // RoadManager roadManager = new OSRMRoadManager();
+        Log.d(TAG, jsonString);
+
+        try {
+            JSONObject jo =  new JSONObject(jsonString);
+            if(jo.getString(ERROR).equals("none")) {
+                //разбираем строку RESULT
+                if (jo.getString(RESULT).equals("null")) {
+                    Toast.makeText(getApplicationContext(), "Маршрут не построен", Toast.LENGTH_SHORT).show();
+                } else {
+
+                    JSONObject joRESULT = new JSONObject(jo.getString(RESULT));
+                    MyVariables.RouteGeometry = joRESULT.getString("route_geometry");
+                    Log.d(TAG, "route_geometry = " + MyVariables.RouteGeometry);
+                    startActivity(new Intent(getApplicationContext(), ActivityNine.class));
+                }
+
+            } else {
+                Toast.makeText(getApplicationContext(), jo.getString(ERROR), Toast.LENGTH_SHORT).show();
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

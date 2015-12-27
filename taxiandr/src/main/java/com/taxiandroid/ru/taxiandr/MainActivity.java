@@ -1251,7 +1251,7 @@ public class MainActivity extends AppCompatActivity
                  if (plyzak.get(k) - zakaz.get(i)==0) flagsred = true;
                  else flagsred =false;
 
-                 Log.d(TAG, "plyzak="+Integer.toString(plyzak.get(k)) +"  " + "zakaz="+Integer.toString(zakaz.get(i)) +"  flagsred=" + flagsred);
+                // Log.d(TAG, "plyzak="+Integer.toString(plyzak.get(k)) +"  " + "zakaz="+Integer.toString(zakaz.get(i)) +"  flagsred=" + flagsred);
                  flagsred2=flagsred2|flagsred;
                  Log.d(TAG, "flagsred2=" + flagsred2);
              }

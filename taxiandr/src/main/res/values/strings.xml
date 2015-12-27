@@ -43,6 +43,7 @@
     <string name="title_activity_activity_eight">Стоянки</string>
     <string name="queue_by_hand">Ручная постановка в очередь</string>
     <string name="update_app">Обновить</string>
+    <string name="title_activity_activity_nine">Маршрут</string>
 
 
 </resources>

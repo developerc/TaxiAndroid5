@@ -37,6 +37,9 @@ public class CustomTwoAdapter extends ArrayAdapter<Two> {
         if (position == 3) {
             imageView.setImageResource(R.drawable.ic_action_undo);
         }
+        if (position == 4) {
+            imageView.setImageResource(R.drawable.ic_action_location);
+        }
 
         return convertView;
     }

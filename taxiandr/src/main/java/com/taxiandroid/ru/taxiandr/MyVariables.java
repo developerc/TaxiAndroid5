@@ -27,6 +27,7 @@ public class MyVariables {
     public static String Lon=""; //долгота
     public static boolean InOuExcept = false;
     public static float Itogo=0;
+    public static String  RouteGeometry = "";
     //public static boolean HandStay=false;
 
 }

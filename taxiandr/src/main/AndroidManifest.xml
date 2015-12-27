@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.taxiandroid.ru.taxiandr" >
+    package="com.taxiandroid.ru.taxiandr">
 
     <uses-sdk
         android:minSdkVersion="15"
@@ -15,16 +15,16 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -33,33 +33,30 @@
         </activity>
         <activity
             android:name=".ActivityTwo"
-            android:label="@string/title_activity_activity_two" >
-        </activity>
+            android:label="@string/title_activity_activity_two"></activity>
         <activity
             android:name=".ActivityThree"
-            android:label="@string/title_activity_activity_three" >
-        </activity>
+            android:label="@string/title_activity_activity_three"></activity>
         <activity
             android:name=".FourActivity"
-            android:label="@string/title_activity_four" >
-        </activity>
+            android:label="@string/title_activity_four"></activity>
         <activity
             android:name=".ActivityFive"
-            android:label="@string/title_activity_activity_five" >
-        </activity>
+            android:label="@string/title_activity_activity_five"></activity>
         <activity
             android:name=".ActivitySix"
             android:label="@string/title_activity_activity_six"
-            android:theme="@style/AppTheme.NoActionBar" >
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
             android:name=".ActivitySeven"
-            android:label="@string/title_activity_activity_seven" >
-        </activity>
+            android:label="@string/title_activity_activity_seven"></activity>
         <activity
             android:name=".ActivityEight"
-            android:label="@string/title_activity_activity_eight" >
-        </activity>
+            android:label="@string/title_activity_activity_eight"></activity>
+        <activity
+            android:name=".ActivityNine"
+            android:label="@string/title_activity_activity_nine"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
