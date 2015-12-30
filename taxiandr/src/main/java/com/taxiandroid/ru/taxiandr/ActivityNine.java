@@ -29,11 +29,12 @@ public class ActivityNine extends AppCompatActivity {
     MapView map;
     ArrayList<GeoPoint> wp2 = new ArrayList<GeoPoint>();
     RoadManager roadManager = new OSRMRoadManager();
-    GeoPoint startPoint, curPoint;
+    GeoPoint startPoint, curPoint, oldPoint, newPoint;
     String[] Lat;
     String[] Lon;
     Marker myMarker;
     IMapController mapController;
+    private static final String TAG = "myLogs";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,14 +43,14 @@ public class ActivityNine extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
-        });
+        });*/
 
         map = (MapView) findViewById(R.id.map);
         map.setTileSource(TileSourceFactory.MAPNIK);
@@ -95,16 +96,22 @@ public class ActivityNine extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(String... params) {
-            Lon[1] = Lon[0];
-            Lat[1] = Lat[0];
-            Lon[0] = MyVariables.Lon;
-            Lat[0] = MyVariables.Lat;
+            if (!Lon[0].equals(MyVariables.Lon)|!Lat[0].equals(MyVariables.Lat)) {
+                Lon[1] = Lon[0];
+                Lat[1] = Lat[0];
+                Lon[0] = MyVariables.Lon;
+                Lat[0] = MyVariables.Lat;
+                Log.d(TAG, "Едем");
+            } else {
+                Log.d(TAG, "Стоим");
+            }
             return null;
         }
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
             curPoint = new GeoPoint(Double.parseDouble(Lat[0]), Double.parseDouble(Lon[0]));
+            oldPoint = new GeoPoint(Double.parseDouble(Lat[1]), Double.parseDouble(Lon[1]));
        // curPoint = new GeoPoint(GeoPoint.fromIntString(Lat[0] + "," + Lon[0]));
             mapController.setCenter(curPoint);
             map.getOverlays().remove(myMarker);
@@ -112,7 +119,14 @@ public class ActivityNine extends AppCompatActivity {
             myMarker.setPosition(curPoint);
             Drawable nodeIcon = getResources().getDrawable(R.drawable.moreinfo_arrow);
             myMarker.setIcon(nodeIcon);
+            myMarker.setRotation(-90);
             map.getOverlays().add(myMarker);
+           // map.setMapOrientation(90);
+
+
+            float bearing = (float) oldPoint.bearingTo(curPoint);
+            map.setMapOrientation(360-bearing);
+            Log.d(TAG, "bearing" + String.valueOf(bearing));
         }
     }
 
