@@ -70,7 +70,9 @@ public class ActivityNine extends AppCompatActivity {
         map.getOverlays().add(myMarker);
 
         //получаем полилайн из пришедшей строки
-        wp2 = PolylineEncoder.decode(MyVariables.RouteGeometry, 1, false);
+        //при декодировании ставим параметр 10 если пять цифр после запятой
+        //и 1 если шесть цифр после запятой
+        wp2 = PolylineEncoder.decode(MyVariables.RouteGeometry, 10, false);
         Road road = roadManager.getRoad(wp2);
         Polyline roadOverlay = RoadManager.buildRoadOverlay(road, this);
         map.getOverlays().add(roadOverlay);
